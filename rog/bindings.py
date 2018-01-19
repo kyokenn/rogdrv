@@ -17,43 +17,42 @@
 from . import defs
 
 
-def get_button_type(button):
-    if button in defs.MOUSE_BUTTONS_NAMES:
-        return defs.BUTTON_TYPE_MOUSE
+def get_action_type(action):
+    if action in defs.ACTIONS_MOUSE:
+        return defs.ACTION_TYPE_MOUSE
     else:
-        return defs.BUTTON_TYPE_KEYBOARD
+        return defs.ACTION_TYPE_KEYBOARD
 
 
-def get_button_name(button):
-    type_ = get_button_type(button)
-    if type_ == defs.BUTTON_TYPE_MOUSE:
-        return defs.MOUSE_BUTTONS_NAMES[button]
-    elif type_ == defs.BUTTON_TYPE_KEYBOARD:
-        return defs.KEY_TO_ECODE[button]
+def get_action_name(action):
+    type_ = get_action_type(action)
+    if type_ == defs.ACTION_TYPE_MOUSE:
+        return defs.ACTIONS_MOUSE[action]
+    elif type_ == defs.ACTION_TYPE_KEYBOARD:
+        return defs.ACTIONS_KEYBOARD[action]
 
 
 class Bindings(object):
     def __init__(self):
-        self._buttons = {
-            1: defs.MOUSE_BUTTONS['MOUSE_LEFT'],
-            2: defs.MOUSE_BUTTONS['MOUSE_RIGHT'],
-            3: defs.MOUSE_BUTTONS['MOUSE_MIDDLE'],
-            4: defs.MOUSE_BUTTONS['MOUSE_SCROLL_UP'],
-            5: defs.MOUSE_BUTTONS['MOUSE_SCROLL_DOWN'],
-            6: defs.MOUSE_BUTTONS['MOUSE_DPI'],
-            7: defs.MOUSE_BUTTONS['MOUSE_BACKWARD'],
-            8: defs.MOUSE_BUTTONS['MOUSE_FORWARD'],
-            9: defs.MOUSE_BUTTONS['MOUSE_BACKWARD'],
-            10: defs.MOUSE_BUTTONS['MOUSE_FORWARD'],
+        self._actions = {
+            1: defs.ACTIONS_MOUSE_NAMES['MOUSE_LEFT'],
+            2: defs.ACTIONS_MOUSE_NAMES['MOUSE_RIGHT'],
+            3: defs.ACTIONS_MOUSE_NAMES['MOUSE_MIDDLE'],
+            4: defs.ACTIONS_MOUSE_NAMES['MOUSE_SCROLL_UP'],
+            5: defs.ACTIONS_MOUSE_NAMES['MOUSE_SCROLL_DOWN'],
+            6: defs.ACTIONS_MOUSE_NAMES['MOUSE_DPI'],
+            7: defs.ACTIONS_MOUSE_NAMES['MOUSE_BACKWARD'],
+            8: defs.ACTIONS_MOUSE_NAMES['MOUSE_FORWARD'],
+            9: defs.ACTIONS_MOUSE_NAMES['MOUSE_BACKWARD'],
+            10: defs.ACTIONS_MOUSE_NAMES['MOUSE_FORWARD'],
         }
-
         self._types = {
-            i: defs.BUTTON_TYPE_MOUSE for i in range(1, 10+1)
+            i: defs.ACTION_TYPE_MOUSE for i in range(1, 10+1)
         }
 
-    def bind(self, slot, button, type_=None):
-        self._buttons[slot] = button
-        self._types[slot] = type_ or get_button_type(button)
+    def bind(self, button, action, type_=None):
+        self._actions[button] = action
+        self._types[button] = type_ or get_action_type(action)
 
     def load(self, data):
         self.bind(1, data[4], data[5])
@@ -69,26 +68,27 @@ class Bindings(object):
 
     def __str__(self):
         data = {}
-        for k, v in self._buttons.items():
-            data['b{}'.format(k)] = get_button_name(v)
-            data['c{}'.format(k)] = v
+        for k, v in self._actions.items():
+            data['action_code_{}'.format(k)] = v
+            data['action_name_{}'.format(k)] = get_action_name(v)
 
         for k, v in self._types.items():
-            if v == defs.BUTTON_TYPE_MOUSE:
-                data['t{}'.format(k)] = 'MOUSE'
-            elif v == defs.BUTTON_TYPE_KEYBOARD:
-                data['t{}'.format(k)] = 'KEYBOARD'
+            if v == defs.ACTION_TYPE_MOUSE:
+                type_ = 'MOUSE'
+            elif v == defs.ACTION_TYPE_KEYBOARD:
+                type_ = 'KEYB.'
             else:
-                data['t{}'.format(k)] = 'UNKNOWN'
+                type_ = 'UNKN.'
+            data['action_type_{}'.format(k)] = type_
 
-        return '''1 (LEFT):\t[{t1}]\t{b1} (0x{c1:02X})
-2 (RIGHT):\t[{t2}]\t{b2} (0x{c2:02X})
-3 (MIDDLE):\t[{t3}]\t{b3} (0x{c3:02X})
-4 (SCR.up):\t[{t4}]\t{b4} (0x{c4:02X})
-5 (SCR.down):\t[{t5}]\t{b5} (0x{c5:02X})
-6 (DPI):\t[{t6}]\t{b6} (0x{c6:02X})
-7 (L.BACKWARD):\t[{t7}]\t{b7} (0x{c7:02X})
-8 (L.FORWARD):\t[{t8}]\t{b8} (0x{c8:02X})
-9 (R.BACKWARD):\t[{t9}]\t{b9} (0x{c9:02X})
-10 (R.FORWARD):\t[{t10}]\t{b10} (0x{c10:02X})
+        return '''1 (LEFT):\t[{action_type_1}] {action_name_1} (0x{action_code_1:02X})
+2 (RIGHT):\t[{action_type_2}] {action_name_2} (0x{action_code_2:02X})
+3 (MIDDLE):\t[{action_type_3}] {action_name_3} (0x{action_code_3:02X})
+4 (SCR.UP):\t[{action_type_4}] {action_name_4} (0x{action_code_4:02X})
+5 (SCR.DOWN):\t[{action_type_5}] {action_name_5} (0x{action_code_5:02X})
+6 (DPI):\t[{action_type_6}] {action_name_6} (0x{action_code_6:02X})
+7 (L.BACKWARD):\t[{action_type_7}] {action_name_7} (0x{action_code_7:02X})
+8 (L.FORWARD):\t[{action_type_8}] {action_name_8} (0x{action_code_8:02X})
+9 (R.BACKWARD):\t[{action_type_9}] {action_name_9} (0x{action_code_9:02X})
+10 (R.FORWARD):\t[{action_type_10}] {action_name_10} (0x{action_code_10:02X})
 '''.format(**data)

@@ -1,5 +1,5 @@
 rogdrv
-------
+======
 
 rogdrv is a simple ASUS ROG Pugio userspace mouse driver for Linux.
 The mouse device consists of 2 input devices: mouse and keyboard.
@@ -31,5 +31,21 @@ Using
 You need r/w permissions for /dev/hidrawX file for your mouse.
 
 ```
-sudo ./rogdrv
+    rogdrv  - start in virtual uinput device mode
+
+    rogdrv --help  - display help
+
+    rogdrv actions  - display list of actions
+
+    rogdrv bind [button action]  - bind a button or display list of bindings
+        button: 1-10
+        action: action code (241 or 0xF1 or 0xf1)
+
+    rogdrv color [name brightness red green blue]  - get/set LED colors
+        name: logo, wheel, bottom, all
+        brightness: 0-4
+        red: 0-255
+        green: 0-255
+        blue: 0-255
+
 ```

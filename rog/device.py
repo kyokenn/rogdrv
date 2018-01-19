@@ -19,7 +19,7 @@ import hidapi
 from evdev import uinput, ecodes
 
 from . import defs
-from .bindings import Bindings, get_button_type
+from .bindings import Bindings, get_action_type
 from .colors import Colors
 
 
@@ -65,9 +65,10 @@ class Device(object):
 
         # collect current pressed buttons
         pressed = set()
-        for key in data[3:]:
-            if key in defs.KEY_TO_ECODE:
-                pressed.add(defs.KEY_TO_ECODE[key])
+        for action in data[3:]:
+            if action in defs.ACTIONS_KEYBOARD:
+                evdev_name = defs.ACTIONS_KEYBOARD[action]
+                pressed.add(getattr(ecodes, evdev_name))
 
         return pressed
 
@@ -92,18 +93,27 @@ class Device(object):
             self._uinput.syn()
 
     def read(self):
+        '''
+        Read data from control subdevice.
+        '''
         return self._ctl.read(64, blocking=True)
 
     def write(self, data):
+        '''
+        Read data into control subdevice.
+        '''
         self._ctl.write(data)
 
     def query(self, data):
+        '''
+        Query (write then read) control subdevice.
+        '''
         self.write(data)
         return self.read()
 
-    def noop(self):
+    def save(self):
         '''
-        Is it noop?
+        Saves the current changes.
         '''
         request = [0] * 64
         request[0] = 0x50
@@ -111,6 +121,12 @@ class Device(object):
         self.query(bytes(request))
 
     def get_bindings(self):
+        '''
+        Get button bindings.
+
+        :returns: bindings object
+        :rtype: `class`:rog.bindings.Bindings:
+        '''
         request = [0] * 64
         request[0] = 0x12
         request[1] = 0x05
@@ -119,19 +135,34 @@ class Device(object):
         bindings.load(response)
         return bindings
 
-    def bind(self, slot, button):
+    def bind(self, button, action):
+        '''
+        Bind button to an action.
+
+        :param button: button to bind (1-10)
+        :type button: int
+
+        :param action: action code
+        :type action: int
+        '''
         request = [0] * 64
         request[0] = 0x51
         request[1] = 0x21
         # mouse button
-        request[4] = defs.BUTTON_SLOTS[slot]
-        request[5] = defs.BUTTON_TYPE_MOUSE
+        request[4] = defs.BUTTON_SLOTS[button]
+        request[5] = defs.ACTION_TYPE_MOUSE
         # key
-        request[6] = button
-        request[7] = get_button_type(button)
+        request[6] = action
+        request[7] = get_action_type(action)
         self.query(bytes(request))
 
     def get_colors(self):
+        '''
+        Get LED colors.
+
+        :returns: colors object
+        :rtype: `class`:rog.colors.Colors:
+        '''
         request = [0] * 64
         request[0] = 0x12
         request[1] = 0x03
@@ -141,21 +172,86 @@ class Device(object):
         colors.load(response)
         return colors
 
-    def set_color(self, slot, color):
+    def set_color(self, name, color, mode='default', brightness=4):
         '''
         Set LED color.
 
+        :param name: led name (logo, wheel, bottom, all)
+        :type: str
+
         :param color: color in format (r, g, b)
         :type color: tuple
+
+        :param mode: mode (default, breath, rainbow, wave, reactive, flasher)
+        :type brightness: str
+
+        :param brightness: brightness level (0-4)
+        :type brightness: int
         '''
+        if brightness not in list(range(5)):
+            brightness = 0
+
         request = [0] * 64
         request[0] = 0x51
         request[1] = 0x28
-        request[2] = 0x03  # mode or slot?
-        request[5] = 0x04  # brightness?
+        request[2] = defs.LED_NAMES[name]
+        request[4] = defs.LED_MODES[mode]
+        request[5] = brightness
         request[6] = color[0]  # r
         request[7] = color[1]  # g
         request[8] = color[2]  # b
+        self.query(bytes(request))
+
+    def switch_profile(self, profile):
+        '''
+        Switch profile.
+
+        :param profile: profile number
+        :type prifile: int
+        '''
+        if profile not in (1, 2, 3):
+            profile = 1
+
+        request = [0] * 64
+        request[0] = 0x50
+        request[1] = 0x02
+        request[2] = profile - 1
+        # request[2] = 0x01
+        self.query(bytes(request))
+
+    def get_dpi(self):
+        '''
+        Get current DPI.
+        '''
+        request = [0] * 64
+        request[0] = 0x12
+        request[1] = 0x04
+        response = self.query(bytes(request))
+
+        dpi1 = response[4] * 50 + 50
+        dpi2 = response[6] * 50 + 50
+        rate = defs.POLLING_RATES[response[8]]
+        undef = response[10]
+        return dpi1, dpi2, rate, undef
+
+    def set_dpi(self, dpi, type_=1):
+        '''
+        Set DPI.
+
+        :param dpi: DPI
+        :type dpi: int
+
+        :param type_: DPI type (1 or 2)
+        :type type_: int
+        '''
+        if type_ not in (1, 2):
+            type_ = 1
+
+        request = [0] * 64
+        request[0] = 0x51
+        request[1] = 0x31
+        request[2] = type_ - 1
+        request[4] = int((dpi - 50) / 50)
         self.query(bytes(request))
 
 

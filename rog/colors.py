@@ -28,7 +28,7 @@ class Colors(object):
         for k, v in self._brightness.items():
             data['b{}'.format(k)] = v
 
-        return '''1 ():\t[{b1}]\t{c1}
-2 ():\t[{b2}]\t{c2}
-3 ():\t[{b3}]\t{c3}
+        return '''1 (logo):\t[brightness:{b1}] {c1}
+2 (wheel):\t[brightness:{b2}] {c2}
+3 (bottom):\t[brightness:{b3}] {c3}
 '''.format(**data)
