@@ -41,11 +41,19 @@ You need r/w permissions for /dev/hidrawX file for your mouse.
         button: 1-10
         action: action code (241 or 0xF1 or 0xf1)
 
-    rogdrv color [name brightness red green blue]  - get/set LED colors
+    rogdrv color [name red green blue [mode] [bright.]]  - get/set LED colors
         name: logo, wheel, bottom, all
-        brightness: 0-4
         red: 0-255
         green: 0-255
         blue: 0-255
+        mode: default, breath, rainbow, wave, reactive, flasher
+        bright.: 0-4
+
+    rogdrv profile  - switch profile
+        profile: 1-3
+
+    rogdrv dpi [dpi [type]]  - get/set DPI
+        dpi: DPI
+        type: 1 (default) or 2
 
 ```
