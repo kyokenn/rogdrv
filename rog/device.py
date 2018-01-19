@@ -219,9 +219,9 @@ class Device(object):
         # request[2] = 0x01
         self.query(bytes(request))
 
-    def get_dpi(self):
+    def get_dpi_rate(self):
         '''
-        Get current DPI.
+        Get current DPI and rate.
         '''
         request = [0] * 64
         request[0] = 0x12
@@ -252,6 +252,22 @@ class Device(object):
         request[1] = 0x31
         request[2] = type_ - 1
         request[4] = int((dpi - 50) / 50)
+        self.query(bytes(request))
+
+    def set_rate(self, rate):
+        '''
+        Set polling rate.
+
+        :param dpi: rate in Hz
+        :type dpi: int
+        '''
+        rates = {v: k for k, v in defs.POLLING_RATES.items()}
+
+        request = [0] * 64
+        request[0] = 0x51
+        request[1] = 0x31
+        request[2] = 0x02
+        request[4] = rates.get(rate, 0)
         self.query(bytes(request))
 
 

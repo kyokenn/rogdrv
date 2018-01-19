@@ -95,10 +95,17 @@ def main():
 
                 device.set_dpi(int(sys.argv[2]), type_=type_)
 
-            dpi1, dpi2, rate, undef = device.get_dpi()
+            dpi1, dpi2, rate, undef = device.get_dpi_rate()
             print('DPI 1: {}'.format(dpi1))
             print('DPI 2: {}'.format(dpi2))
-            # print('Polling rate: {}'.format(rate))
+
+        elif sys.argv[1] == 'rate':
+            device = Pugio()
+            if len(sys.argv) >= 3:
+                device.set_rate(int(sys.argv[2]))
+
+            dpi1, dpi2, rate, undef = device.get_dpi_rate()
+            print('Polling rate: {}'.format(rate))
             # print('?: {}'.format(undef))
 
             return
@@ -127,8 +134,11 @@ def main():
         profile: 1-3
 
     rogdrv dpi [dpi [type]]  - get/set DPI
-        dpi: DPI
+        dpi: DPI (50-7200)
         type: 1 (default) or 2
+
+    rogdrv rate [rate]  - get/set polling rate
+        rate: rate in Hz (125, 250, 500, 1000)
 
 ''')
             return
