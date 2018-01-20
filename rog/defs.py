@@ -102,6 +102,7 @@ ACTIONS_MOUSE = {
     0xE6: 'MOUSE_DPI',
     0xE8: 'MOUSE_SCROLL_UP',
     0xE9: 'MOUSE_SCROLL_DOWN',
+    0xFF: 'MOUSE_DISABLED',
 }
 
 ACTIONS_MOUSE_NAMES = {v: k for k, v in ACTIONS_MOUSE.items()}
