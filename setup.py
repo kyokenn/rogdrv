@@ -14,7 +14,10 @@ setup(
     license='GPL',
     long_description=readme,
     entry_points={
-        'console_scripts': ['rogdrv=rogdrv.__main__:main']
+        'console_scripts': [
+            'rogdrv=rogdrv.__main__:rogdrv',
+            'rogdrv-config=rogdrv.__main__:rogdrv_config',
+        ]
     },
     packages=[
         'rogdrv',

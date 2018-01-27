@@ -20,10 +20,45 @@ import sys
 import threading
 
 from . import defs
-from .device import Pugio
+from .device import EventHandler, Pugio
 
 
-def main():
+def rogdrv():
+    '''
+    Virtual uinput device driver which converts mouse events
+    into uinput events.
+    '''
+    if '--help' in sys.argv:
+        print('''Usage: rogdrv [--console]
+  --help       - display help
+  --console    - starts in pure console mode, disables tray icon
+''')
+        return
+
+    device = Pugio()
+    handler = EventHandler()
+
+    def loop():
+        while True:
+            e = device.next_event()
+            handler.handle_event(e)
+
+    if '--console' in sys.argv:
+        loop()
+    else:
+        from .gtk3 import gtk3_main
+        thread = threading.Thread(target=loop)
+        thread.start()
+        gtk3_main()
+        device.close()
+        handler.close()
+        os.kill(os.getpid(), signal.SIGTERM)
+
+
+def rogdrv_config():
+    '''
+    Mouse configuration tool
+    '''
     if len(sys.argv) >= 2:
         if sys.argv[1] == 'actions':
             print('Keyboard actions:')
@@ -113,54 +148,33 @@ def main():
 
         elif sys.argv[1] == '--help':
             print('''Usage:
-    rogdrv [--console] - start in virtual uinput device mode
-        --console: starts in pure console mode, disables tray icon
+  rogdrv-config actions  - display help
 
-    rogdrv --help  - display help
+  rogdrv-config actions  - display list of actions
 
-    rogdrv actions  - display list of actions
+  rogdrv-config bind [button action]  - bind a button or display list of bindings
+    button: 1-10
+    action: action code (241 or 0xF1 or 0xf1)
 
-    rogdrv bind [button action]  - bind a button or display list of bindings
-        button: 1-10
-        action: action code (241 or 0xF1 or 0xf1)
+  rogdrv-config color [name red green blue [mode] [bright.]]  - get/set LED colors
+    name: logo, wheel, bottom, all
+    red: 0-255
+    green: 0-255
+    blue: 0-255
+    mode: default, breath, rainbow, wave, reactive, flasher
+    bright.: 0-4
 
-    rogdrv color [name red green blue [mode] [bright.]]  - get/set LED colors
-        name: logo, wheel, bottom, all
-        red: 0-255
-        green: 0-255
-        blue: 0-255
-        mode: default, breath, rainbow, wave, reactive, flasher
-        bright.: 0-4
+  rogdrv-config profile  - switch profile
+    profile: 1-3
 
-    rogdrv profile  - switch profile
-        profile: 1-3
+  rogdrv-config dpi [dpi [type]]  - get/set DPI
+    dpi: DPI (50-7200)
+    type: 1 (default) or 2
 
-    rogdrv dpi [dpi [type]]  - get/set DPI
-        dpi: DPI (50-7200)
-        type: 1 (default) or 2
-
-    rogdrv rate [rate]  - get/set polling rate
-        rate: rate in Hz (125, 250, 500, 1000)
-
+  rogdrv-config rate [rate]  - get/set polling rate
+    rate: rate in Hz (125, 250, 500, 1000)
 ''')
             return
 
-    # enter uinput device mode
-    device = Pugio()
-
-    def loop():
-        while True:
-            e = device.next_event()
-            device.handle_event(e)
-
-    if '--console' in sys.argv:
-        loop()
-        return
-    else:
-        from .gtk3 import gtk3_main
-        thread = threading.Thread(target=loop)
-        thread.start()
-        gtk3_main()
-        device.close()
-        os.kill(os.getpid(), signal.SIGTERM)
-        return
+    print('Got nothing to do.')
+    print("Try 'rogdrv-config --help' for more information.")

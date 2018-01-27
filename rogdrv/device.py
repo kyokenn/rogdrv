@@ -23,6 +23,35 @@ from .bindings import Bindings, get_action_type
 from .colors import Colors
 
 
+class EventHandler(object):
+    def __init__(self):
+        self._uinput = uinput.UInput()
+        self._last_pressed = set()
+
+    def handle_event(self, pressed):
+        '''
+        Handle event. Generates regular evdev/uinput events.
+        '''
+        # release buttons
+        released = self._last_pressed - pressed
+        for code in released:
+            self._uinput.write(ecodes.EV_KEY, code, defs.EVDEV_RELEASE)
+        self._last_pressed -= released
+
+        # press buttons
+        new_pressed = pressed - self._last_pressed
+        for code in new_pressed:
+            self._uinput.write(ecodes.EV_KEY, code, defs.EVDEV_PRESS)
+        self._last_pressed |= new_pressed
+
+        # sync
+        if released or new_pressed:
+            self._uinput.syn()
+
+    def close(self):
+        self._uinput.close()
+
+
 class Device(object):
     VENDOR_ID = 0x0b05
 
@@ -41,13 +70,9 @@ class Device(object):
         self._kbd = hidapi.Device(kbd_info)
         self._ctl = hidapi.Device(ctl_info)
 
-        self._uinput = uinput.UInput()
-        self._last_pressed = set()
-
     def close(self):
         self._kbd.close()
         self._ctl.close()
-        self._uinput.close()
 
     def next_event(self):
         '''
@@ -75,26 +100,6 @@ class Device(object):
                 pressed.add(getattr(ecodes, evdev_name))
 
         return pressed
-
-    def handle_event(self, pressed):
-        '''
-        Handle event. Generates regular evdev/uinput events.
-        '''
-        # release buttons
-        released = self._last_pressed - pressed
-        for code in released:
-            self._uinput.write(ecodes.EV_KEY, code, defs.EVDEV_RELEASE)
-        self._last_pressed -= released
-
-        # press buttons
-        new_pressed = pressed - self._last_pressed
-        for code in new_pressed:
-            self._uinput.write(ecodes.EV_KEY, code, defs.EVDEV_PRESS)
-        self._last_pressed |= new_pressed
-
-        # sync
-        if released or new_pressed:
-            self._uinput.syn()
 
     def read(self):
         '''
