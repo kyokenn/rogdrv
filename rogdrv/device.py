@@ -44,6 +44,11 @@ class Device(object):
         self._uinput = uinput.UInput()
         self._last_pressed = set()
 
+    def close(self):
+        self._kbd.close()
+        self._ctl.close()
+        self._uinput.close()
+
     def next_event(self):
         '''
         Get virtual keyboard event.
@@ -52,7 +57,6 @@ class Device(object):
         :rtype: set
         '''
         data = self._kbd.read(256, blocking=True)
-        # print(list(data))
 
         # TODO: implement modifiers
         mod = data[1]
