@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # Copyright (C) 2018 Kyoken, kyoken@kyoken.ninja
 
 # This program is free software; you can redistribute it and/or
@@ -16,7 +14,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
+import os
+import signal
 import sys
+import threading
 
 from . import defs
 from .device import Pugio
@@ -110,9 +111,10 @@ def main():
 
             return
 
-        else:
+        elif sys.argv[1] == '--help':
             print('''Usage:
-    rogdrv  - start in virtual uinput device mode
+    rogdrv [--console] - start in virtual uinput device mode
+        --console: starts in pure console mode, disables tray icon
 
     rogdrv --help  - display help
 
@@ -145,10 +147,20 @@ def main():
 
     # enter uinput device mode
     device = Pugio()
-    while True:
-        e = device.next_event()
-        device.handle_event(e)
 
+    def loop():
+        while True:
+            e = device.next_event()
+            device.handle_event(e)
 
-if __name__ == '__main__':
-    main()
+    if '--console' in sys.argv:
+        loop()
+        return
+    else:
+        from .gtk3 import gtk3_main
+        thread = threading.Thread(target=loop)
+        thread.start()
+        gtk3_main()
+        device.close()
+        os.kill(os.getpid(), signal.SIGTERM)
+        return

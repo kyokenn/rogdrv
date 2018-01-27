@@ -26,5 +26,7 @@ setup(
         'License :: OSI Approved :: GPL License',
         'Programming Language :: Python :: 3',
         'Topic :: Games/Entertainment',
-    ]
+    ],
+    include_package_data=True,
+    zip_safe=False,
 )
