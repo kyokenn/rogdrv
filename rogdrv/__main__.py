@@ -18,8 +18,8 @@
 
 import sys
 
-from rog import defs
-from rog.device import Pugio
+from . import defs
+from .device import Pugio
 
 
 def main():
