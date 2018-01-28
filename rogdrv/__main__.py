@@ -63,12 +63,18 @@ def rogdrv_config():
         if sys.argv[1] == 'actions':
             print('Keyboard actions:')
             for action, name in defs.ACTIONS_KEYBOARD.items():
-                print('    {}: {}'.format(action, name))
+                print('  {action} (0x{action:02X}): {name}'.format(**{
+                    'action': action,
+                    'name': name,
+                }))
 
             print('')
             print('Mouse actions:')
             for action, name in defs.ACTIONS_MOUSE.items():
-                print('    {}: {}'.format(action, name))
+                print('  {action} (0x{action:02X}): {name}'.format(**{
+                    'action': action,
+                    'name': name,
+                }))
 
             return
 
@@ -148,30 +154,30 @@ def rogdrv_config():
 
         elif sys.argv[1] == '--help':
             print('''Usage:
-  rogdrv-config actions  - display help
+  rogdrv-config --help                            - display help
 
-  rogdrv-config actions  - display list of actions
+  rogdrv-config actions                           - display list of actions
 
-  rogdrv-config bind [button action]  - bind a button or display list of bindings
-    button: 1-10
+  rogdrv-config bind [button action]              - bind a button or display list of bindings
+    button: button no. (1-10)
     action: action code (241 or 0xF1 or 0xf1)
 
-  rogdrv-config color [name red green blue [mode] [bright.]]  - get/set LED colors
+  rogdrv-config color [name r g b [mode] [brght]] - get/set LED colors
     name: logo, wheel, bottom, all
-    red: 0-255
-    green: 0-255
-    blue: 0-255
+    r: red (0-255)
+    g: green (0-255)
+    b: blue (0-255)
     mode: default, breath, rainbow, wave, reactive, flasher
-    bright.: 0-4
+    brght: brightness 0-4
 
-  rogdrv-config profile  - switch profile
-    profile: 1-3
+  rogdrv-config profile                           - switch profile
+    profile: profile no. (1-3)
 
-  rogdrv-config dpi [dpi [type]]  - get/set DPI
-    dpi: DPI (50-7200)
+  rogdrv-config dpi [value [type]]                - get/set DPI
+    value: DPI (50-7200)
     type: 1 (default) or 2
 
-  rogdrv-config rate [rate]  - get/set polling rate
+  rogdrv-config rate [rate]                       - get/set polling rate
     rate: rate in Hz (125, 250, 500, 1000)
 ''')
             return
