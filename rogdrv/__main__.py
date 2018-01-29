@@ -49,7 +49,7 @@ def rogdrv():
         from .gtk3 import gtk3_main
         thread = threading.Thread(target=loop)
         thread.start()
-        gtk3_main()
+        gtk3_main(device)
         device.close()
         handler.close()
         os.kill(os.getpid(), signal.SIGTERM)
@@ -59,6 +59,12 @@ def rogdrv_config():
     '''
     Mouse configuration tool
     '''
+    device = Pugio()
+    request = [0] * 64
+    request[0] = 0x12
+    request[1] = 0x00
+    print(list(device.query(bytes(request))))
+
     if len(sys.argv) >= 2:
         if sys.argv[1] == 'actions':
             print('Keyboard actions:')
@@ -122,9 +128,10 @@ def rogdrv_config():
         elif sys.argv[1] == 'profile':
             device = Pugio()
             if len(sys.argv) >= 3:
-                device.switch_profile(int(sys.argv[2]))
+                device.set_profile(int(sys.argv[2]))
 
-            # print(device.get_colors())
+            profile = device.get_profile()
+            print('Profile: {}'.format(profile))
             return
 
         elif sys.argv[1] == 'dpi':
@@ -140,6 +147,7 @@ def rogdrv_config():
             dpi1, dpi2, rate, undef = device.get_dpi_rate()
             print('DPI 1: {}'.format(dpi1))
             print('DPI 2: {}'.format(dpi2))
+            return
 
         elif sys.argv[1] == 'rate':
             device = Pugio()
@@ -148,8 +156,6 @@ def rogdrv_config():
 
             dpi1, dpi2, rate, undef = device.get_dpi_rate()
             print('Polling rate: {}'.format(rate))
-            # print('?: {}'.format(undef))
-
             return
 
         elif sys.argv[1] == '--help':
@@ -170,8 +176,8 @@ def rogdrv_config():
     mode: default, breath, rainbow, wave, reactive, flasher
     brght: brightness 0-4
 
-  rogdrv-config profile                           - switch profile
-    profile: profile no. (1-3)
+  rogdrv-config profile [value]                   - get/set profile
+    value: profile no. (1-3)
 
   rogdrv-config dpi [value [type]]                - get/set DPI
     value: DPI (50-7200)

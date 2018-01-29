@@ -57,7 +57,7 @@ def get_autostart_path():
 
 class TrayIcon(object):
     def __init__(self, icon_path, menu):
-        self.menu = menu
+        self._menu = menu
 
         APPIND_SUPPORT = True
         try:
@@ -66,23 +66,26 @@ class TrayIcon(object):
             APPIND_SUPPORT = False
 
         if APPIND_SUPPORT:
-            self.icon = AppIndicator3.Indicator.new(
+            self._icon = AppIndicator3.Indicator.new(
                 APPID, icon_path,
                 AppIndicator3.IndicatorCategory.APPLICATION_STATUS)
-            self.icon.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
-            self.icon.set_menu(self.menu)
+            self._icon.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
+            self._icon.set_menu(self._menu)
         else:
-            self.icon = Gtk.StatusIcon()
-            self.icon.set_from_file(icon_path)
-            self.icon.connect('popup-menu', self.on_popup_menu)
+            self._icon = Gtk.StatusIcon()
+            self._icon.set_from_file(icon_path)
+            self._icon.connect('popup-menu', self.on_popup_menu)
 
     def on_popup_menu(self, icon, button, time):
-        self.menu.popup(
+        self._menu.popup(
             None, None, Gtk.StatusIcon.position_menu,
             icon, button, time)
 
 
-class Handler(object):
+class EventHandler(object):
+    def __init__(self, device):
+        self._device = device
+
     def on_quit(self, *args, **kwargs):
         Notify.uninit()
         Gtk.main_quit()
@@ -104,8 +107,17 @@ StartupNotify=false''')
         if os.path.exists(get_autostart_path()):
             os.remove(get_autostart_path())
 
+    def on_profile_1(self, *args, **kwargs):
+        self._device.set_profile(1)
 
-def gtk3_main():
+    def on_profile_2(self, *args, **kwargs):
+        self._device.set_profile(2)
+
+    def on_profile_3(self, *args, **kwargs):
+        self._device.set_profile(3)
+
+
+def gtk3_main(device):
     # Handle pressing Ctr+C properly, ignored by default
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -118,6 +130,36 @@ def gtk3_main():
   <object class="GtkMenu" id="menu">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
+
+    <child>
+      <object class="GtkMenuItem" id="menu_profile_1">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Profile 1</property>
+        <property name="use_underline">True</property>
+        <signal name="activate" handler="on_profile_1" swapped="no"/>
+      </object>
+    </child>
+
+    <child>
+      <object class="GtkMenuItem" id="menu_profile_2">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Profile 2</property>
+        <property name="use_underline">True</property>
+        <signal name="activate" handler="on_profile_2" swapped="no"/>
+      </object>
+    </child>
+
+    <child>
+      <object class="GtkMenuItem" id="menu_profile_3">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Profile 3</property>
+        <property name="use_underline">True</property>
+        <signal name="activate" handler="on_profile_3" swapped="no"/>
+      </object>
+    </child>
 
     <child>
       <object class="GtkMenuItem" id="menu_autostart_enable">
@@ -151,7 +193,7 @@ def gtk3_main():
 
   </object>
 </interface>''')
-    builder.connect_signals(Handler())
+    builder.connect_signals(EventHandler(device))
 
     trayicon = TrayIcon(next(find_icons()), builder.get_object('menu'))
     Notify.init(APPID)

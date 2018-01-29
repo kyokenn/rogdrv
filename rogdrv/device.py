@@ -211,9 +211,18 @@ class Device(object):
         request[8] = color[2]  # b
         self.query(bytes(request))
 
-    def switch_profile(self, profile):
+    def get_profile(self):
         '''
-        Switch profile.
+        Get profile.
+        '''
+        request = [0] * 64
+        request[0] = 0x12
+        response = self.query(bytes(request))
+        return response[10] + 1
+
+    def set_profile(self, profile):
+        '''
+        Set profile.
 
         :param profile: profile number
         :type prifile: int
