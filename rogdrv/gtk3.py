@@ -83,12 +83,23 @@ class TrayIcon(object):
 
 
 class EventHandler(object):
-    def __init__(self, device):
+    def __init__(self, builder, device):
+        self._builder = builder
         self._device = device
 
     def on_quit(self, *args, **kwargs):
         Notify.uninit()
         Gtk.main_quit()
+
+    def on_autostart(self, *args, **kwargs):
+        enable = self._builder.get_object('menu_autostart_enable')
+        disable = self._builder.get_object('menu_autostart_disable')
+        if os.path.exists(get_autostart_path()):  # enabled
+            disable.set_active(True)
+            enable.set_active(False)
+        else:
+            enable.set_active(True)
+            disable.set_active(False)
 
     def on_autostart_enable(self, *args, **kwargs):
         with open(get_autostart_path(), 'w') as f:
@@ -107,6 +118,12 @@ StartupNotify=false''')
         if os.path.exists(get_autostart_path()):
             os.remove(get_autostart_path())
 
+    def on_profile(self, *args, **kwargs):
+        profile = self._device.get_profile()
+        for i in range(1, 3 + 1):
+            menu_item = self._builder.get_object('menu_profile_{}'.format(i))
+            menu_item.set_active(i == profile)
+
     def on_profile_1(self, *args, **kwargs):
         self._device.set_profile(1)
 
@@ -122,78 +139,10 @@ def gtk3_main(device):
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     builder = Gtk.Builder()
-    builder.add_from_string('''
-<?xml version="1.0" encoding="UTF-8"?>
-<interface>
-  <requires lib="gtk+" version="3.10"/>
-
-  <object class="GtkMenu" id="menu">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-
-    <child>
-      <object class="GtkMenuItem" id="menu_profile_1">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Profile 1</property>
-        <property name="use_underline">True</property>
-        <signal name="activate" handler="on_profile_1" swapped="no"/>
-      </object>
-    </child>
-
-    <child>
-      <object class="GtkMenuItem" id="menu_profile_2">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Profile 2</property>
-        <property name="use_underline">True</property>
-        <signal name="activate" handler="on_profile_2" swapped="no"/>
-      </object>
-    </child>
-
-    <child>
-      <object class="GtkMenuItem" id="menu_profile_3">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Profile 3</property>
-        <property name="use_underline">True</property>
-        <signal name="activate" handler="on_profile_3" swapped="no"/>
-      </object>
-    </child>
-
-    <child>
-      <object class="GtkMenuItem" id="menu_autostart_enable">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Enable Autorun</property>
-        <property name="use_underline">True</property>
-        <signal name="activate" handler="on_autostart_enable" swapped="no"/>
-      </object>
-    </child>
-
-    <child>
-      <object class="GtkMenuItem" id="menu_autostart_disable">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Disable Autorun</property>
-        <property name="use_underline">True</property>
-        <signal name="activate" handler="on_autostart_disable" swapped="no"/>
-      </object>
-    </child>
-
-    <child>
-      <object class="GtkMenuItem" id="menu_quit">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Quit</property>
-        <property name="use_underline">True</property>
-        <signal name="activate" handler="on_quit" swapped="no"/>
-      </object>
-    </child>
-
-  </object>
-</interface>''')
-    builder.connect_signals(EventHandler(device))
+    builder.add_from_file(os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
+        'gtk3.glade'))
+    builder.connect_signals(EventHandler(builder, device))
 
     trayicon = TrayIcon(next(find_icons()), builder.get_object('menu'))
     Notify.init(APPID)

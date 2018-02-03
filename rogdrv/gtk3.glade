@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.20.0 -->
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  <object class="GtkMenu" id="menu">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="menu_profile">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Profile</property>
+        <property name="use_underline">True</property>
+        <signal name="activate" handler="on_profile" swapped="yes"/>
+        <child type="submenu">
+          <object class="GtkMenu">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkRadioMenuItem" id="menu_profile_1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Profile 1</property>
+                <property name="use_underline">True</property>
+                <signal name="activate" handler="on_profile_1" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="menu_profile_2">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Profile 2</property>
+                <property name="use_underline">True</property>
+                <property name="group">menu_profile_1</property>
+                <signal name="activate" handler="on_profile_2" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="menu_profile_3">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Profile 3</property>
+                <property name="use_underline">True</property>
+                <property name="group">menu_profile_1</property>
+                <signal name="activate" handler="on_profile_3" swapped="yes"/>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkSeparatorMenuItem">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="menu_autostart">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Autorun</property>
+        <property name="use_underline">True</property>
+        <signal name="activate" handler="on_autostart" swapped="yes"/>
+        <child type="submenu">
+          <object class="GtkMenu">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkRadioMenuItem" id="menu_autostart_enable">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Enabled</property>
+                <property name="use_underline">True</property>
+                <signal name="activate" handler="on_autostart_enable" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="menu_autostart_disable">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Disabled</property>
+                <property name="use_underline">True</property>
+                <property name="group">menu_autostart_enable</property>
+                <signal name="activate" handler="on_autostart_disable" swapped="yes"/>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkSeparatorMenuItem">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="menu_quit">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Quit</property>
+        <property name="use_underline">True</property>
+        <signal name="activate" handler="on_quit" swapped="yes"/>
+      </object>
+    </child>
+  </object>
+</interface>
