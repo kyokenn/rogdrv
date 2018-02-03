@@ -50,24 +50,12 @@
       </object>
     </child>
     <child>
-      <object class="GtkSeparatorMenuItem">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-      </object>
-    </child>
-    <child>
       <object class="GtkCheckMenuItem" id="menu_autostart">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="label" translatable="yes">Autostart</property>
         <property name="use_underline">True</property>
         <signal name="toggled" handler="on_autostart" swapped="yes"/>
-      </object>
-    </child>
-    <child>
-      <object class="GtkSeparatorMenuItem">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
       </object>
     </child>
     <child>
