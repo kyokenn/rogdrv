@@ -61,7 +61,6 @@
         <property name="can_focus">False</property>
         <property name="label" translatable="yes">Autorun</property>
         <property name="use_underline">True</property>
-        <signal name="activate" handler="on_autostart" swapped="yes"/>
         <child type="submenu">
           <object class="GtkMenu">
             <property name="visible">True</property>

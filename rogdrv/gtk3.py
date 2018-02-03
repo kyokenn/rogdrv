@@ -91,19 +91,10 @@ class EventHandler(object):
         Notify.uninit()
         Gtk.main_quit()
 
-    def on_autostart(self, *args, **kwargs):
-        enable = self._builder.get_object('menu_autostart_enable')
-        disable = self._builder.get_object('menu_autostart_disable')
-        if os.path.exists(get_autostart_path()):  # enabled
-            disable.set_active(True)
-            enable.set_active(False)
-        else:
-            enable.set_active(True)
-            disable.set_active(False)
-
-    def on_autostart_enable(self, *args, **kwargs):
-        with open(get_autostart_path(), 'w') as f:
-            f.write('''
+    def on_autostart_enable(self, item, *args, **kwargs):
+        if item.get_active():
+            with open(get_autostart_path(), 'w') as f:
+                f.write('''
 [Desktop Entry]
 Name=ROGDRV
 GenericName=ASUS ROG userspace driver
@@ -114,36 +105,55 @@ Type=Application
 Icon=input-mouse
 StartupNotify=false''')
 
-    def on_autostart_disable(self, *args, **kwargs):
-        if os.path.exists(get_autostart_path()):
-            os.remove(get_autostart_path())
+    def on_autostart_disable(self, item, *args, **kwargs):
+        if item.get_active():
+            if os.path.exists(get_autostart_path()):
+                os.remove(get_autostart_path())
 
-    def on_profile(self, *args, **kwargs):
+    def on_profile(self, item, *args, **kwargs):
         profile = self._device.get_profile()
         for i in range(1, 3 + 1):
             menu_item = self._builder.get_object('menu_profile_{}'.format(i))
             menu_item.set_active(i == profile)
 
-    def on_profile_1(self, *args, **kwargs):
-        self._device.set_profile(1)
+    def on_profile_1(self, item, *args, **kwargs):
+        if item.get_active():
+            self._device.set_profile(1)
 
-    def on_profile_2(self, *args, **kwargs):
-        self._device.set_profile(2)
+    def on_profile_2(self, item, *args, **kwargs):
+        if item.get_active():
+            self._device.set_profile(2)
 
-    def on_profile_3(self, *args, **kwargs):
-        self._device.set_profile(3)
+    def on_profile_3(self, item, *args, **kwargs):
+        if item.get_active():
+            self._device.set_profile(3)
 
 
 def gtk3_main(device):
     # Handle pressing Ctr+C properly, ignored by default
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+    # generate UI
     builder = Gtk.Builder()
     builder.add_from_file(os.path.join(
         os.path.abspath(os.path.dirname(__file__)),
         'gtk3.glade'))
+
+    # check autostart status
+    enable = builder.get_object('menu_autostart_enable')
+    disable = builder.get_object('menu_autostart_disable')
+    print(get_autostart_path(), os.path.exists(get_autostart_path()))
+    if os.path.exists(get_autostart_path()):  # enabled
+        enable.set_active(False)
+        disable.set_active(True)
+    else:
+        enable.set_active(True)
+        disable.set_active(False)
+
+    # bind events
     builder.connect_signals(EventHandler(builder, device))
 
+    # create tray icon
     trayicon = TrayIcon(next(find_icons()), builder.get_object('menu'))
     Notify.init(APPID)
     Gtk.main()
