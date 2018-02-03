@@ -114,7 +114,9 @@ StartupNotify=false
         profile = self._device.get_profile()
         for i in range(1, 3 + 1):
             menu_item = self._builder.get_object('menu_profile_{}'.format(i))
-            menu_item.set_active(i == profile)
+            if i == profile:
+                menu_item.set_active(True)
+            # menu_item.set_active(i == profile)
 
     def on_profile_1(self, item, *args, **kwargs):
         if item.get_active():
