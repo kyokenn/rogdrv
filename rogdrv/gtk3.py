@@ -91,7 +91,8 @@ class EventHandler(object):
         Notify.uninit()
         Gtk.main_quit()
 
-    def on_autostart_enable(self, item, *args, **kwargs):
+    def on_autostart(self, item, *args, **kwargs):
+        print('on_autostart', item.get_active())
         if item.get_active():
             with open(get_autostart_path(), 'w') as f:
                 f.write('''
@@ -103,10 +104,9 @@ Exec=rogdrv
 Terminal=false
 Type=Application
 Icon=input-mouse
-StartupNotify=false''')
-
-    def on_autostart_disable(self, item, *args, **kwargs):
-        if item.get_active():
+StartupNotify=false
+''')
+        else:
             if os.path.exists(get_autostart_path()):
                 os.remove(get_autostart_path())
 
@@ -140,15 +140,8 @@ def gtk3_main(device):
         'gtk3.glade'))
 
     # check autostart status
-    enable = builder.get_object('menu_autostart_enable')
-    disable = builder.get_object('menu_autostart_disable')
-    print(get_autostart_path(), os.path.exists(get_autostart_path()))
-    if os.path.exists(get_autostart_path()):  # enabled
-        enable.set_active(False)
-        disable.set_active(True)
-    else:
-        enable.set_active(True)
-        disable.set_active(False)
+    autostart = builder.get_object('menu_autostart')
+    autostart.set_active(os.path.exists(get_autostart_path()))
 
     # bind events
     builder.connect_signals(EventHandler(builder, device))

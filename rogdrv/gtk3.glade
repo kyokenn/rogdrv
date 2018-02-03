@@ -56,36 +56,12 @@
       </object>
     </child>
     <child>
-      <object class="GtkMenuItem" id="menu_autostart">
+      <object class="GtkCheckMenuItem" id="menu_autostart">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Autorun</property>
+        <property name="label" translatable="yes">Autostart</property>
         <property name="use_underline">True</property>
-        <child type="submenu">
-          <object class="GtkMenu">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <child>
-              <object class="GtkRadioMenuItem" id="menu_autostart_enable">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Enabled</property>
-                <property name="use_underline">True</property>
-                <signal name="activate" handler="on_autostart_enable" swapped="yes"/>
-              </object>
-            </child>
-            <child>
-              <object class="GtkRadioMenuItem" id="menu_autostart_disable">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Disabled</property>
-                <property name="use_underline">True</property>
-                <property name="group">menu_autostart_enable</property>
-                <signal name="activate" handler="on_autostart_disable" swapped="yes"/>
-              </object>
-            </child>
-          </object>
-        </child>
+        <signal name="toggled" handler="on_autostart" swapped="yes"/>
       </object>
     </child>
     <child>
