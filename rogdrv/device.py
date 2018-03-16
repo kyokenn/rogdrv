@@ -52,13 +52,20 @@ class EventHandler(object):
         self._uinput.close()
 
 
+class DeviceNotFound(Exception):
+    pass
+
+
 class Device(object):
-    VENDOR_ID = 0x0b05
+    vendor_id = 0x0b05
+    profiles = 0
 
     def __init__(self):
-        devices = hidapi.enumerate(
-            vendor_id=self.VENDOR_ID,
-            product_id=self.PRODUCT_ID)
+        devices = tuple(hidapi.enumerate(
+            vendor_id=self.vendor_id,
+            product_id=self.product_id))
+        if not devices:
+            raise DeviceNotFound()
 
         # keyboard subdevice
         kbd_info = next(filter(
@@ -227,7 +234,10 @@ class Device(object):
         :param profile: profile number
         :type prifile: int
         '''
-        if profile not in (1, 2, 3):
+        if profile < 1:
+            profile = 1
+
+        if profile > self.profiles:
             profile = 1
 
         request = [0] * 64
@@ -290,4 +300,25 @@ class Device(object):
 
 
 class Pugio(Device):
-    PRODUCT_ID = 0x1846
+    product_id = 0x1846
+    profiles = 3
+
+
+class StrixImpact(Device):
+    product_id = 0x1847
+    profiles = 0
+
+
+class DeviceManager(object):
+    device_classes = (
+        Pugio,
+        StrixImpact,
+    )
+
+    @classmethod
+    def get_device(cls):
+        for device_class in cls.device_classes:
+            try:
+                return device_class()
+            except DeviceNotFound:
+                pass

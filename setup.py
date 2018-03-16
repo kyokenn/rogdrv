@@ -6,7 +6,7 @@ readme = open('README.md').read()
 
 setup(
     name='rogdrv',
-    version='0.0.1',
+    version='0.0.2',
     description='ASUS ROG userspace driver',
     url='https://github.com/kyokenn/rogdrv',
     author='Kyoken',

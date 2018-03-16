@@ -20,7 +20,7 @@ import sys
 import threading
 
 from . import defs
-from .device import EventHandler, Pugio
+from .device import EventHandler, DeviceManager
 
 
 def rogdrv():
@@ -35,7 +35,7 @@ def rogdrv():
 ''')
         return
 
-    device = Pugio()
+    device = DeviceManager.get_device()
     handler = EventHandler()
 
     def loop():
@@ -59,11 +59,11 @@ def rogdrv_config():
     '''
     Mouse configuration tool
     '''
-    device = Pugio()
-    request = [0] * 64
-    request[0] = 0x12
-    request[1] = 0x00
-    print(list(device.query(bytes(request))))
+    # device = Pugio()
+    # request = [0] * 64
+    # request[0] = 0x12
+    # request[1] = 0x00
+    # print(list(device.query(bytes(request))))
 
     if len(sys.argv) >= 2:
         if sys.argv[1] == 'actions':
@@ -85,7 +85,11 @@ def rogdrv_config():
             return
 
         elif sys.argv[1] == 'bind':
-            device = Pugio()
+            device = DeviceManager.get_device()
+            if not device:
+                print('Device not found')
+                return
+
             if len(sys.argv) >= 4:
                 button = int(sys.argv[2])
                 action = sys.argv[3].lower()
@@ -100,7 +104,11 @@ def rogdrv_config():
             return
 
         elif sys.argv[1] == 'color':
-            device = Pugio()
+            device = DeviceManager.get_device()
+            if not device:
+                print('Device not found')
+                return
+
             if len(sys.argv) >= 6:
                 name = sys.argv[2]
 
@@ -126,7 +134,15 @@ def rogdrv_config():
             return
 
         elif sys.argv[1] == 'profile':
-            device = Pugio()
+            device = DeviceManager.get_device()
+            if not device:
+                print('Device not found')
+                return
+
+            if not device.profiles:
+                print('Profiles not supported')
+                return
+
             if len(sys.argv) >= 3:
                 device.set_profile(int(sys.argv[2]))
 
@@ -135,7 +151,11 @@ def rogdrv_config():
             return
 
         elif sys.argv[1] == 'dpi':
-            device = Pugio()
+            device = DeviceManager.get_device()
+            if not device:
+                print('Device not found')
+                return
+
             if len(sys.argv) >= 3:
                 if len(sys.argv) >= 4:
                     type_ = int(sys.argv[3])
@@ -150,7 +170,11 @@ def rogdrv_config():
             return
 
         elif sys.argv[1] == 'rate':
-            device = Pugio()
+            device = DeviceManager.get_device()
+            if not device:
+                print('Device not found')
+                return
+
             if len(sys.argv) >= 3:
                 device.set_rate(int(sys.argv[2]))
 
