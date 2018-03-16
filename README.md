@@ -1,5 +1,5 @@
 rogdrv
-------
+======
 
 rogdrv is a simple ASUS ROG userspace mouse driver for Linux.
 The mouse device consists of 2 input devices: mouse and keyboard.
@@ -9,7 +9,7 @@ So this driver maps HID events to the generic keyboard events.
 The protocol was reverse-engineered, so everything is experimental. Use at your own risk.
 
 Supported devices
-=================
+-----------------
 
 * ASUS ROG Pugio (most features work)
 * ASUS ROG Strix Impact (switching LED works, everything other is untested)
@@ -18,7 +18,7 @@ There is a chance that a driver can be compatible with other mouse devices
 from ASUS ROG (Republic of Gamers) series.
 
 Features
-========
+--------
 
 * Virtual uinput device
 * Button bindings
@@ -28,14 +28,14 @@ Features
 * Polling rate setting
 
 Requirements
-============
+------------
 
 * python >= 3.0
 * python-hidapi (hidapi-cffi)
 * python-evdev
 
 Installation
-============
+------------
 
 Userspace driver installation:
 ```
@@ -51,7 +51,7 @@ sudo udevadm trigger
 ```
 
 Using
-=====
+-----
 
 Userspace driver consists of 2 programs: *rogdrv* and *rogdrv-config*
 
