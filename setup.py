@@ -6,7 +6,7 @@ readme = open('README.md').read()
 
 setup(
     name='rogdrv',
-    version='0.0.2',
+    version='0.0.3',
     description='ASUS ROG userspace driver',
     url='https://github.com/kyokenn/rogdrv',
     author='Kyoken',
@@ -22,7 +22,6 @@ setup(
     packages=[
         'rogdrv',
     ],
-    install_requires=['hidapi-cffi>=0.2.1', 'evdev==0.4.7'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',

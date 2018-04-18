@@ -31,8 +31,14 @@ Requirements
 ------------
 
 * python >= 3.0
-* python-hidapi (hidapi-cffi)
+* python-hidapi + python-cffi (hidapi-cffi)
 * python-evdev
+* gir-appindicator3
+
+Ubuntu:
+```
+apt install python3-hidapi python3-evdev gir1.2-appindicator3-0.1
+```
 
 Installation
 ------------

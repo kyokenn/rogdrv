@@ -62,7 +62,7 @@ class TrayIcon(object):
         APPIND_SUPPORT = True
         try:
             from gi.repository import AppIndicator3
-        except:
+        except Exception as e:
             APPIND_SUPPORT = False
 
         if APPIND_SUPPORT:
@@ -144,6 +144,11 @@ def gtk3_main(device):
     # check autostart status
     autostart = builder.get_object('menu_autostart')
     autostart.set_active(os.path.exists(get_autostart_path()))
+
+    # disable profiles if unsupported
+    if not device.profiles:
+        profile = builder.get_object('menu_profile')
+        profile.set_visible(False)
 
     # bind events
     builder.connect_signals(EventHandler(builder, device))
