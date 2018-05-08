@@ -94,6 +94,8 @@ ACTIONS_KEYBOARD = {
 }
 
 ACTIONS_MOUSE = {
+    225: '???',
+    226: '???',
     0xF0: 'MOUSE_LEFT',
     0xF1: 'MOUSE_RIGHT',
     0xF2: 'MOUSE_MIDDLE',

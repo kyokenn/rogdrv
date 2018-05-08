@@ -117,7 +117,7 @@ def rogdrv_config():
                 b = int(sys.argv[5])
 
                 if len(sys.argv) >= 7:
-                    mode = int(sys.argv[6])
+                    mode = sys.argv[6]
                 else:
                     mode = 'default'
 
@@ -163,6 +163,7 @@ def rogdrv_config():
                     type_ = 1
 
                 device.set_dpi(int(sys.argv[2]), type_=type_)
+                device.save()
 
             dpi1, dpi2, rate, undef = device.get_dpi_rate()
             print('DPI 1: {}'.format(dpi1))
@@ -177,9 +178,36 @@ def rogdrv_config():
 
             if len(sys.argv) >= 3:
                 device.set_rate(int(sys.argv[2]))
+                device.save()
 
             dpi1, dpi2, rate, undef = device.get_dpi_rate()
             print('Polling rate: {}'.format(rate))
+            return
+
+        elif sys.argv[1] == 'dump':
+            device = DeviceManager.get_device()
+            if not device:
+                print('Device not found')
+                return
+
+            if len(sys.argv) >= 3:
+                with open(sys.argv[2], 'w') as f:
+                    device.dump(f)
+
+            print('Settings saved into: {}'.format(sys.argv[2]))
+            return
+
+        elif sys.argv[1] == 'load':
+            device = DeviceManager.get_device()
+            if not device:
+                print('Device not found')
+                return
+
+            if len(sys.argv) >= 3:
+                with open(sys.argv[2], 'r') as f:
+                    device.load(f)
+
+            print('Settings loaded from: {}'.format(sys.argv[2]))
             return
 
         elif sys.argv[1] == '--help':
@@ -198,7 +226,7 @@ def rogdrv_config():
     g: green (0-255)
     b: blue (0-255)
     mode: default, breath, rainbow, wave, reactive, flasher
-    brght: brightness 0-4
+    brght: brightness 0-4 (default - 4)
 
   rogdrv-config profile [value]                   - get/set profile
     value: profile no. (1-3)
@@ -209,6 +237,12 @@ def rogdrv_config():
 
   rogdrv-config rate [rate]                       - get/set polling rate
     rate: rate in Hz (125, 250, 500, 1000)
+
+  rogdrv-config dump file                         - save settings into file
+    file: path to json file
+
+  rogdrv-config load file                         - load settings from file
+    file: path to json file
 ''')
             return
 

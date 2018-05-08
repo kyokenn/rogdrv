@@ -14,6 +14,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
+import json
 import hidapi
 
 from evdev import uinput, ecodes
@@ -151,7 +152,11 @@ class Device(object):
         bindings.load(response)
         return bindings
 
-    def bind(self, button, action):
+    def set_bindings(self, bindings: Bindings):
+        for button, action, type_ in iter(bindings):
+            self.bind(button, action)
+
+    def bind(self, button: int, action: int):
         '''
         Bind button to an action.
 
@@ -187,6 +192,12 @@ class Device(object):
         colors = Colors()
         colors.load(response)
         return colors
+
+    def set_colors(self, colors: Colors):
+        for color, r, g, b, brightness in iter(colors):
+            for led_name, led_id in defs.LED_NAMES.items():
+                if led_id == color + 1:
+                    self.set_color(led_name, (r, g, b), brightness=brightness)
 
     def set_color(self, name, color, mode='default', brightness=4):
         '''
@@ -227,7 +238,7 @@ class Device(object):
         response = self.query(bytes(request))
         return response[10] + 1
 
-    def set_profile(self, profile):
+    def set_profile(self, profile: int):
         '''
         Set profile.
 
@@ -262,7 +273,7 @@ class Device(object):
         undef = response[10]
         return dpi1, dpi2, rate, undef
 
-    def set_dpi(self, dpi, type_=1):
+    def set_dpi(self, dpi: int, type_=1):
         '''
         Set DPI.
 
@@ -282,7 +293,7 @@ class Device(object):
         request[4] = int((dpi - 50) / 50)
         self.query(bytes(request))
 
-    def set_rate(self, rate):
+    def set_rate(self, rate: int):
         '''
         Set polling rate.
 
@@ -297,6 +308,48 @@ class Device(object):
         request[2] = 0x02
         request[4] = rates.get(rate, 0)
         self.query(bytes(request))
+
+    def dump(self, f):
+        data = {}
+        saved_profile = self.get_profile()
+
+        for profile in range(1, self.profiles + 1):
+            self.set_profile(profile)
+
+            dpi1, dpi2, rate, undef = self.get_dpi_rate()
+
+            data[str(profile)] = {
+                'dpi': [dpi1, dpi2],
+                'rate': rate,
+                'colors': self.get_colors().export(),
+                'bindings': self.get_bindings().export(),
+            }
+
+        self.set_profile(saved_profile)
+        json.dump(data, f, indent=4)
+
+    def load(self, f):
+        data = json.load(f)
+        saved_profile = self.get_profile()
+
+        for profile, profile_data in data.items():
+            self.set_profile(int(profile))
+
+            self.set_dpi(profile_data['dpi'][0], 1)
+            self.set_dpi(profile_data['dpi'][1], 2)
+            self.set_rate(profile_data['rate'])
+
+            colors = Colors()
+            colors.load(profile_data['colors'])
+            self.set_colors(colors)
+
+            bindings = Bindings()
+            bindings.load(profile_data['bindings'])
+            self.set_bindings(bindings)
+
+            self.save()
+
+        self.set_profile(saved_profile)
 
 
 class Pugio(Device):
