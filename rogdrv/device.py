@@ -368,7 +368,7 @@ class Spatha(Device):
 
     
 class Buzzard(Device):
-    product_id = 0x1824
+    product_id = 0x1816
     profiles = 3
 
 
