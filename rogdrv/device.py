@@ -366,12 +366,18 @@ class Spatha(Device):
     product_id = 0x1824
     profiles = 3
 
+    
+class Buzzard(Device):
+    product_id = 0x1816
+    profiles = 3
+
 
 class DeviceManager(object):
     device_classes = (
         Pugio,
         StrixImpact,
         Spatha,
+        Buzzard,
     )
 
     @classmethod
