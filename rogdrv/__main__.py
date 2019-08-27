@@ -187,7 +187,7 @@ def rogdrv_config():
             if t:
                 print('Sleep: {} min.'.format(t))
             else:
-                print("Don't sleep".format(t))
+                print('Sleep: disabled')
             return
 
         elif args[1] == 'dpi':
@@ -221,7 +221,7 @@ def rogdrv_config():
                 device.save()
 
             dpi1, dpi2, rate, undef = device.get_dpi_rate()
-            print('Polling rate: {}'.format(rate))
+            print('Polling rate: {} Hz'.format(rate))
             return
 
         elif args[1] == 'dump':
@@ -233,8 +233,10 @@ def rogdrv_config():
             if len(args) >= 3:
                 with open(args[2], 'w') as f:
                     device.dump(f)
+                print('Settings saved into: {}'.format(args[2]))
+            else:
+                print(device.dump())
 
-            print('Settings saved into: {}'.format(args[2]))
             return
 
         elif args[1] == 'load':
@@ -252,11 +254,12 @@ def rogdrv_config():
 
         elif args[1] == '--help':
             print('''Usage:
-  rogdrv-config --help                            - display help
+  rogdrv-config --help                            - displays help
+  rogdrv-config --debug                           - enables debug mode
 
-  rogdrv-config actions                           - display list of actions
+  rogdrv-config actions                           - display list of available actions
 
-  rogdrv-config bind [button action]              - bind a button or display list of bindings
+  rogdrv-config bind [button action]              - bind a button or display bindings
     button: button no. (1-99)
     action: action code (241 or 0xF1 or 0xf1)
 
@@ -266,19 +269,22 @@ def rogdrv_config():
     g: green (0-255)
     b: blue (0-255)
     mode: default, breath, rainbow, wave, reactive, flasher
-    brght: brightness 0-4 (default - 4)
+    brght: brightness 0-4 (default-4)
 
   rogdrv-config profile [value]                   - get/set profile
     value: profile no. (1-3)
 
-  rogdrv-config dpi [value [preset]]                - get/set DPI
+  rogdrv-config sleep [value]                     - get/set sleep timeout
+    value: timeout in minutes (0-disabled, 1, 2, 3, 5, 10)
+
+  rogdrv-config dpi [value [preset]]              - get/set DPI
     value: DPI (50-7200)
     preset: 1 (default) or 2
 
   rogdrv-config rate [rate]                       - get/set polling rate
     rate: rate in Hz (125, 250, 500, 1000)
 
-  rogdrv-config dump file                         - save settings into file
+  rogdrv-config dump [file]                       - save settings into file
     file: path to json file
 
   rogdrv-config load file                         - load settings from file

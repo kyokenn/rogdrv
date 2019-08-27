@@ -439,7 +439,7 @@ class Device(object, metaclass=DeviceMeta):
         request[4] = rates.get(rate, 0)
         self.query(bytes(request))
 
-    def dump(self, f):
+    def dump(self, f=None):
         data = {}
         saved_profile = self.get_profile()
 
@@ -448,15 +448,25 @@ class Device(object, metaclass=DeviceMeta):
 
             dpi1, dpi2, rate, undef = self.get_dpi_rate()
 
-            data[str(profile)] = {
+            profile_data = {
+                'bindings': self.get_bindings().export(),
                 'dpi': [dpi1, dpi2],
                 'rate': rate,
-                'colors': self.get_colors().export(),
-                'bindings': self.get_bindings().export(),
             }
 
+            if self.leds:
+                profile_data['colors'] = self.get_colors().export()
+
+            if self.wireless:
+                profile_data['sleep'] = self.get_sleep()
+
+            data[str(profile)] = profile_data
+
         self.set_profile(saved_profile)
-        json.dump(data, f, indent=4)
+        if f is not None:
+            json.dump(data, f, indent=4)
+        else:
+            return json.dumps(data, indent=4)
 
     def load(self, f):
         data = json.load(f)
@@ -465,17 +475,25 @@ class Device(object, metaclass=DeviceMeta):
         for profile, profile_data in data.items():
             self.set_profile(int(profile))
 
-            self.set_dpi(profile_data['dpi'][0], 1)
-            self.set_dpi(profile_data['dpi'][1], 2)
-            self.set_rate(profile_data['rate'])
+            if 'binding' in profile_data:
+                bindings = Bindings(self.buttons)
+                bindings.load(profile_data['bindings'])
+                self.set_bindings(bindings)
 
-            colors = Colors()
-            colors.load(profile_data['colors'])
-            self.set_colors(colors)
+            if 'dpi' in profile_data:
+                self.set_dpi(profile_data['dpi'][0], 1)
+                self.set_dpi(profile_data['dpi'][1], 2)
 
-            bindings = Bindings(self.buttons)
-            bindings.load(profile_data['bindings'])
-            self.set_bindings(bindings)
+            if 'rate' in profile_data:
+                self.set_rate(profile_data['rate'])
+
+            if 'colors' in profile_data:
+                colors = Colors()
+                colors.load(profile_data['colors'])
+                self.set_colors(colors)
+
+            if 'sleep' in profile_data:
+                self.set_sleep(profile_data['sleep'])
 
             self.save()
 

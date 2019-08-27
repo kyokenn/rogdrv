@@ -73,6 +73,7 @@ sudo pip3 install .
 ```
 
 You need r/w permissions for /dev/hidrawX file of your mouse.
+
 You can solve this by installing a custom udev rules:
 
 ```
@@ -88,7 +89,7 @@ or
 Using
 -----
 
-Userspace driver consists of 2 programs: *rogdrv* and *rogdrv-config*
+Userspace driver consists of 2 programs: **rogdrv** and **rogdrv-config**
 
 rogdrv is a virtual uinput device driver which converts mouse events into uinput events.
 ![rogdrv](/screenshot.png)
@@ -101,11 +102,12 @@ Usage: rogdrv [--console]
 rogdrv-config is a mouse configuration tool.
 ```
 Usage:
-  rogdrv-config --help                            - display help
+  rogdrv-config --help                            - displays help
+  rogdrv-config --debug                           - enables debug mode
 
-  rogdrv-config actions                           - display list of actions
+  rogdrv-config actions                           - display list of available actions
 
-  rogdrv-config bind [button action]              - bind a button or display list of bindings
+  rogdrv-config bind [button action]              - bind a button or display bindings
     button: button no. (1-99)
     action: action code (241 or 0xF1 or 0xf1)
 
@@ -120,7 +122,10 @@ Usage:
   rogdrv-config profile [value]                   - get/set profile
     value: profile no. (1-3)
 
-  rogdrv-config dpi [value [preset]]                - get/set DPI
+  rogdrv-config sleep [value]                     - get/set sleep timeout
+    value: timeout in minutes (0-disabled, 1, 2, 3, 5, 10)
+
+  rogdrv-config dpi [value [preset]]              - get/set DPI
     value: DPI (50-7200)
     preset: 1 (default) or 2
 
