@@ -30,7 +30,7 @@ Device name      | Own device | Profiles | Button Bindings | Performance Setting
 **Buzzard**      |            | +        | ?               | ?                    | ?    | N/A
 **Spatha**       |            | +        | ?               | ?                    | ?    | ?
 
-**Own device** - I own this device, which means I can reverce engeneer,
+**Own device** - I own this device, which means I can reverse engeneer,
 implement and test all the features.
 
 **Profiles** - Profile switching feature.
@@ -40,6 +40,8 @@ implement and test all the features.
 **Performance Settings** - DPI, polling rate, buttons response, angle snapping configuration feature.
 
 **LED** - LED color customization feature.
+
+**Sleep** - Sleep timeout setting feature for the wireless mices.
 
 There is a chance that a driver can be compatible with other mouse devices
 from ASUS ROG (Republic of Gamers) series.
