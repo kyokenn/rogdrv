@@ -622,6 +622,7 @@ class StrixImpact(Device):
 
 class StrixEvolve(Device):
     product_id = 0X185B
+    profiles = 3
     buttons = 8
     leds = 1
 

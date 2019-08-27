@@ -15,7 +15,7 @@ Device name      | Own device | Profiles | Button Bindings | Performance Setting
 -----------------|------------|----------|-----------------|----------------------|------|-------
 **Pugio**        | +          | +        | +               | +                    | +    | N/A
 **Strix Carry**  | +          | +        | +               | +                    | N/A  | +
-**Strix Impact** |            | ?        | ?               | ?                    | +    | N/A
+**Strix Impact** |            | N/A      | ?               | ?                    | +    | N/A
 **Strix Evolve** |            | ?        | ?               | ?                    | ?    | N/A
 **Buzzard**      |            | +        | ?               | ?                    | ?    | N/A
 **Spatha**       |            | +        | ?               | ?                    | ?    | ?
