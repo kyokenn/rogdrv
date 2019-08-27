@@ -478,6 +478,12 @@ class StrixImpact(Device):
     leds = 3
 
 
+class StrixEvolve(Device):
+    product_id = 0x185b
+    buttons = 8
+    leds = 3
+
+
 class Spatha(Device):
     product_id = 0x1824
     profiles = 3

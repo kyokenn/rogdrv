@@ -16,6 +16,7 @@ Device name      | Own device | Profiles | Buttons | DPI    | Polling rate | LED
 **Pugio**        | +          | +        | +       | +      | +            | +
 **Strix Carry**  | +          | +        | +       | +      | +            | N/A
 **Strix Impact** |            | ?        | ?       | ?      | ?            | +
+**Strix Evolve** |            | ?        | ?       | ?      | ?            | ?
 **Buzzard**      |            | +        | ?       | ?      | ?            | ?
 **Spatha**       |            | +        | ?       | ?      | ?            | ?
 
