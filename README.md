@@ -21,23 +21,23 @@ Features
 Supported devices
 -----------------
 
-Device name      | Own device | Profiles | Buttons | DPI/Rate/Response/Snapping | LEDs | Sleep
------------------|------------|----------|---------|----------------------------|------|-------
-**Pugio**        | +          | +        | +       | +                          | +    | N/A
-**Strix Carry**  | +          | +        | +       | +                          | N/A  | +
-**Strix Impact** |            | ?        | ?       | ?                          | +    | N/A
-**Strix Evolve** |            | ?        | ?       | ?                          | ?    | N/A
-**Buzzard**      |            | +        | ?       | ?                          | ?    | N/A
-**Spatha**       |            | +        | ?       | ?                          | ?    | ?
+Device name      | Own device | Profiles | Button Bindings | Performance Settings | LEDs | Sleep
+-----------------|------------|----------|-----------------|----------------------|------|-------
+**Pugio**        | +          | +        | +               | +                    | +    | N/A
+**Strix Carry**  | +          | +        | +               | +                    | N/A  | +
+**Strix Impact** |            | ?        | ?               | ?                    | +    | N/A
+**Strix Evolve** |            | ?        | ?               | ?                    | ?    | N/A
+**Buzzard**      |            | +        | ?               | ?                    | ?    | N/A
+**Spatha**       |            | +        | ?               | ?                    | ?    | ?
 
 **Own device** - I own this device, which means I can reverce engeneer,
 implement and test all the features.
 
 **Profiles** - Profile switching feature.
 
-**Buttons** - Buttons binding feature.
+**Button Bindings** - Buttons binding feature.
 
-**DPI/Rate/Response/Snapping** - DPI, polling rate, buttons response, angle snapping setting feature.
+**Performance Settings** - DPI, polling rate, buttons response, angle snapping configuration feature.
 
 **LED** - LED color customization feature.
 
