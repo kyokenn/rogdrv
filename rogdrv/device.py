@@ -467,6 +467,12 @@ class Spatha(Device):
     wireless = True
 
 
+class Buzzard(Device):
+    product_id = 0x1816
+    profiles = 3
+    buttons = 8
+
+
 def get_device():
     for device_class in DeviceMeta.device_classes:
         try:
