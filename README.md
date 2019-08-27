@@ -90,7 +90,36 @@ Usage: rogdrv [--console]
 
 rogdrv-config is a mouse configuration tool.
 ```
-Usage: rogdrv-config [options...]
-  --help       - display help
-  ...
+Usage:
+  rogdrv-config --help                            - display help
+
+  rogdrv-config actions                           - display list of actions
+
+  rogdrv-config bind [button action]              - bind a button or display list of bindings
+    button: button no. (1-99)
+    action: action code (241 or 0xF1 or 0xf1)
+
+  rogdrv-config color [name r g b [mode] [brght]] - get/set LED colors
+    name: logo, wheel, bottom, all
+    r: red (0-255)
+    g: green (0-255)
+    b: blue (0-255)
+    mode: default, breath, rainbow, wave, reactive, flasher
+    brght: brightness 0-4 (default - 4)
+
+  rogdrv-config profile [value]                   - get/set profile
+    value: profile no. (1-3)
+
+  rogdrv-config dpi [value [preset]]                - get/set DPI
+    value: DPI (50-7200)
+    preset: 1 (default) or 2
+
+  rogdrv-config rate [rate]                       - get/set polling rate
+    rate: rate in Hz (125, 250, 500, 1000)
+
+  rogdrv-config dump file                         - save settings into file
+    file: path to json file
+
+  rogdrv-config load file                         - load settings from file
+    file: path to json file
 ```

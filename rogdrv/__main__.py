@@ -106,7 +106,7 @@ def rogdrv_config():
                 return
 
             if len(args) >= 4:
-                button = int(args[2])
+                button = int(args[2].lstrip('0'))
                 action = args[3].lower()
                 if action.startswith('0x'):
                     action = int(action, 16)
@@ -115,7 +115,7 @@ def rogdrv_config():
                 device.bind(button, action)
                 device.save()
 
-            print('Bindings:')
+            # print('Bindings:')
             print(device.get_bindings())
             return
 
@@ -198,16 +198,16 @@ def rogdrv_config():
 
             if len(args) >= 3:
                 if len(args) >= 4:
-                    type_ = int(args[3])
+                    preset = int(args[3])
                 else:
-                    type_ = 1
+                    preset = 1
 
-                device.set_dpi(int(args[2]), type_=type_)
+                device.set_dpi(int(args[2]), preset=preset)
                 device.save()
 
             dpi1, dpi2, rate, undef = device.get_dpi_rate()
-            print('DPI 1: {}'.format(dpi1))
-            print('DPI 2: {}'.format(dpi2))
+            print('DPI Preset 1: {}'.format(dpi1))
+            print('DPI Preset 2: {}'.format(dpi2))
             return
 
         elif args[1] == 'rate':
@@ -271,9 +271,9 @@ def rogdrv_config():
   rogdrv-config profile [value]                   - get/set profile
     value: profile no. (1-3)
 
-  rogdrv-config dpi [value [type]]                - get/set DPI
+  rogdrv-config dpi [value [preset]]                - get/set DPI
     value: DPI (50-7200)
-    type: 1 (default) or 2
+    preset: 1 (default) or 2
 
   rogdrv-config rate [rate]                       - get/set polling rate
     rate: rate in Hz (125, 250, 500, 1000)

@@ -125,10 +125,13 @@ class Bindings(object):
 # '''.format(**self.export())
 
     def __str__(self):
-        lines = []
+        lines = [
+            'BTN | TYPE  | CODE - ACTION',
+            '----|-------|--------------'
+        ]
 
         for btn, item in self.export().items():
-            lines.append('{:02d} | {} | 0x{:02X} {}'.format(
+            lines.append('{:02d}  | {} | 0x{:02X} - {}'.format(
                 int(btn), item['type'], item['code'], item['name']))
 
         return '\n'.join(lines)

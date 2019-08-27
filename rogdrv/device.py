@@ -212,12 +212,12 @@ class Device(object, metaclass=DeviceMeta):
         self.query(bytes(request))
 
     def get_bindings(self):
-        '''
-        Get button bindings.
+        """
+        Get buttons binding.
 
         :returns: bindings object
         :rtype: `class`:rog.bindings.Bindings:
-        '''
+        """
         request = [0] * 64
         request[0] = 0x12
         request[1] = 0x05
@@ -234,28 +234,37 @@ class Device(object, metaclass=DeviceMeta):
         return bindings
 
     def set_bindings(self, bindings: Bindings):
+        """
+        Set buttons binding.
+
+        :param bindings: bindings object
+        :type bindings: `class`:rog.bindings.Bindings:
+        """
         for button, action, type_ in iter(bindings):
             self.bind(button, action)
 
     def bind(self, button: int, action: int):
-        '''
-        Bind button to an action.
+        """
+        Bind mouse button to an action.
 
         :param button: button to bind (1-10)
         :type button: int
 
         :param action: action code
         :type action: int
-        '''
+        """
         request = [0] * 64
         request[0] = 0x51
         request[1] = 0x21
+
         # mouse button
         request[4] = defs.BUTTON_SLOTS[button]
         request[5] = defs.ACTION_TYPE_MOUSE
-        # key
+
+        # action
         request[6] = action
         request[7] = get_action_type(action)
+
         self.query(bytes(request))
 
     def get_colors(self):
@@ -355,31 +364,31 @@ class Device(object, metaclass=DeviceMeta):
         request[1] = 0x04
         response = self.query(bytes(request))
 
-        dpi1 = response[4] * 50 + 50
-        dpi2 = response[6] * 50 + 50
+        dpi1 = response[4] * 50 + 50  # DPI preset 1
+        dpi2 = response[6] * 50 + 50  # DPI preset 2
         rate = defs.POLLING_RATES[response[8]]
         undef = response[10]
         return dpi1, dpi2, rate, undef
 
-    def set_dpi(self, dpi: int, type_=1):
+    def set_dpi(self, dpi: int, preset=1):
         """
         Set DPI.
 
         :param dpi: DPI
         :type dpi: int
 
-        :param type_: DPI type (1 or 2)
-        :type type_: int
+        :param preset: DPI preset (1 or 2)
+        :type preset: int
         """
-        if type_ not in (1, 2):
-            type_ = 1
+        if preset not in (1, 2):
+            preset = 1
 
-        logger.debug('setting DPI {} to {}'.format(type_, dpi))
+        logger.debug('setting DPI to {} for preset {}'.format(dpi, preset))
 
         request = [0] * 64
         request[0] = 0x51
         request[1] = 0x31
-        request[2] = type_ - 1
+        request[2] = preset - 1
         request[4] = int((dpi - 50) / 50)
         self.query(bytes(request))
 
