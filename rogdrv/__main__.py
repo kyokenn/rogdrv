@@ -205,7 +205,7 @@ def rogdrv_config():
                 device.set_dpi(int(args[2]), preset=preset)
                 device.save()
 
-            dpi1, dpi2, rate, undef = device.get_dpi_rate()
+            dpi1, dpi2, rate, response, snapping = device.get_dpi_rate_response_snapping()
             print('DPI Preset 1: {}'.format(dpi1))
             print('DPI Preset 2: {}'.format(dpi2))
             return
@@ -220,8 +220,36 @@ def rogdrv_config():
                 device.set_rate(int(args[2]))
                 device.save()
 
-            dpi1, dpi2, rate, undef = device.get_dpi_rate()
+            dpi1, dpi2, rate, response, snapping = device.get_dpi_rate_response_snapping()
             print('Polling rate: {} Hz'.format(rate))
+            return
+
+        elif args[1] == 'response':
+            device = get_device()
+            if not device:
+                print('Device not found')
+                return
+
+            if len(args) >= 3:
+                device.set_response(int(args[2]))
+                device.save()
+
+            dpi1, dpi2, rate, response, snapping = device.get_dpi_rate_response_snapping()
+            print('Button response: {} ms'.format(response))
+            return
+
+        elif args[1] == 'snapping':
+            device = get_device()
+            if not device:
+                print('Device not found')
+                return
+
+            if len(args) >= 3:
+                device.set_snapping(int(args[2]))
+                device.save()
+
+            dpi1, dpi2, rate, response, snapping = device.get_dpi_rate_response_snapping()
+            print('Snapping angle: type {}'.format(snapping))
             return
 
         elif args[1] == 'dump':
@@ -259,9 +287,22 @@ def rogdrv_config():
 
   rogdrv-config actions                           - display list of available actions
 
+  rogdrv-config profile [value]                   - get/set profile
+    value: profile no. (1-3)
+
   rogdrv-config bind [button action]              - bind a button or display bindings
     button: button no. (1-99)
     action: action code (241 or 0xF1 or 0xf1)
+
+  rogdrv-config dpi [value [preset]]              - get/set DPI
+    value: DPI (50-7200)
+    preset: 1 (default) or 2
+
+  rogdrv-config rate [hz]                         - get/set polling rate
+    hz: rate in Hz (125, 250, 500, 1000)
+
+  rogdrv-config response [ms]                     - get/set buttons response
+    ms: response in ms (4, 8, 12, 16, 20, 24, 28, 32)
 
   rogdrv-config color [name r g b [mode] [brght]] - get/set LED colors
     name: logo, wheel, bottom, all
@@ -271,18 +312,8 @@ def rogdrv_config():
     mode: default, breath, rainbow, wave, reactive, flasher
     brght: brightness 0-4 (default-4)
 
-  rogdrv-config profile [value]                   - get/set profile
-    value: profile no. (1-3)
-
   rogdrv-config sleep [value]                     - get/set sleep timeout
     value: timeout in minutes (0-disabled, 1, 2, 3, 5, 10)
-
-  rogdrv-config dpi [value [preset]]              - get/set DPI
-    value: DPI (50-7200)
-    preset: 1 (default) or 2
-
-  rogdrv-config rate [rate]                       - get/set polling rate
-    rate: rate in Hz (125, 250, 500, 1000)
 
   rogdrv-config dump [file]                       - save settings into file
     file: path to json file

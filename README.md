@@ -21,14 +21,14 @@ Features
 Supported devices
 -----------------
 
-Device name      | Own device | Profiles | Buttons | DPI    | Polling rate | LED colors
------------------|------------|----------|---------|--------|--------------|-----------
-**Pugio**        | +          | +        | +       | +      | +            | +
-**Strix Carry**  | +          | +        | +       | +      | +            | N/A
-**Strix Impact** |            | ?        | ?       | ?      | ?            | +
-**Strix Evolve** |            | ?        | ?       | ?      | ?            | ?
-**Buzzard**      |            | +        | ?       | ?      | ?            | ?
-**Spatha**       |            | +        | ?       | ?      | ?            | ?
+Device name      | Own device | Profiles | Buttons | DPI/Rate/Response/Snapping | LEDs | Sleep
+-----------------|------------|----------|---------|----------------------------|------|-------
+**Pugio**        | +          | +        | +       | +                          | +    | N/A
+**Strix Carry**  | +          | +        | +       | +                          | N/A  | +
+**Strix Impact** |            | ?        | ?       | ?                          | +    | N/A
+**Strix Evolve** |            | ?        | ?       | ?                          | ?    | N/A
+**Buzzard**      |            | +        | ?       | ?                          | ?    | N/A
+**Spatha**       |            | +        | ?       | ?                          | ?    | ?
 
 **Own device** - I own this device, which means I can reverce engeneer,
 implement and test all the features.
@@ -37,11 +37,9 @@ implement and test all the features.
 
 **Buttons** - Buttons binding feature.
 
-**DPI** - DPI setting feature.
+**DPI/Rate/Response/Snapping** - DPI, polling rate, buttons response, angle snapping setting feature.
 
-**Polling rate** - Polling rate setting feature.
-
-**LED colors** - LED color customization feature.
+**LED** - LED color customization feature.
 
 There is a chance that a driver can be compatible with other mouse devices
 from ASUS ROG (Republic of Gamers) series.
@@ -107,9 +105,22 @@ Usage:
 
   rogdrv-config actions                           - display list of available actions
 
+  rogdrv-config profile [value]                   - get/set profile
+    value: profile no. (1-3)
+
   rogdrv-config bind [button action]              - bind a button or display bindings
     button: button no. (1-99)
     action: action code (241 or 0xF1 or 0xf1)
+
+  rogdrv-config dpi [value [preset]]              - get/set DPI
+    value: DPI (50-7200)
+    preset: 1 (default) or 2
+
+  rogdrv-config rate [hz]                         - get/set polling rate
+    hz: rate in Hz (125, 250, 500, 1000)
+
+  rogdrv-config response [ms]                     - get/set buttons response
+    ms: response in ms (4, 8, 12, 16, 20, 24, 28, 32)
 
   rogdrv-config color [name r g b [mode] [brght]] - get/set LED colors
     name: logo, wheel, bottom, all
@@ -117,22 +128,12 @@ Usage:
     g: green (0-255)
     b: blue (0-255)
     mode: default, breath, rainbow, wave, reactive, flasher
-    brght: brightness 0-4 (default - 4)
-
-  rogdrv-config profile [value]                   - get/set profile
-    value: profile no. (1-3)
+    brght: brightness 0-4 (default-4)
 
   rogdrv-config sleep [value]                     - get/set sleep timeout
     value: timeout in minutes (0-disabled, 1, 2, 3, 5, 10)
 
-  rogdrv-config dpi [value [preset]]              - get/set DPI
-    value: DPI (50-7200)
-    preset: 1 (default) or 2
-
-  rogdrv-config rate [rate]                       - get/set polling rate
-    rate: rate in Hz (125, 250, 500, 1000)
-
-  rogdrv-config dump file                         - save settings into file
+  rogdrv-config dump [file]                       - save settings into file
     file: path to json file
 
   rogdrv-config load file                         - load settings from file

@@ -131,11 +131,14 @@ class Device(object, metaclass=DeviceMeta):
         # keyboard subdevice
         kbd_info = next(filter(
             lambda x: x.interface_number == self.keyboard_interface, devices), None)
+
         # control subdevice
         ctl_info = next(filter(
             lambda x: x.interface_number == self.control_interface, devices), None)
 
+        logger.debug('opening keyboard subdevice')
         self._kbd = hidapi.Device(kbd_info)
+        logger.debug('opening control subdevice')
         self._ctl = hidapi.Device(ctl_info)
 
     @classmethod
@@ -144,7 +147,9 @@ class Device(object, metaclass=DeviceMeta):
             cls.__name__, cls.vendor_id, cls.product_id)
 
     def close(self):
+        logger.debug('closing keyboard subdevice')
         self._kbd.close()
+        logger.debug('closing control subdevice')
         self._ctl.close()
 
     def next_event(self):
@@ -177,6 +182,9 @@ class Device(object, metaclass=DeviceMeta):
     def read(self):
         """
         Read data from control subdevice.
+
+        :returns: response data
+        :rtype: bytes
         """
         data = self._ctl.read(64, blocking=True)
         logger.debug('< ' + ' '.join('{:02X}'.format(i) for i in data))
@@ -184,14 +192,24 @@ class Device(object, metaclass=DeviceMeta):
 
     def write(self, data):
         """
-        Read data into control subdevice.
+        Write data into control subdevice.
+
+        :param request: request data
+        :type request: bytes
         """
         logger.debug('> ' + ' '.join('{:02X}'.format(i) for i in data))
         self._ctl.write(data)
 
     def query(self, request):
         """
-        Query (write then read) control subdevice.
+        Query the control subdevice.
+        Write request to control subdevice then read response from it.
+
+        :param request: request data
+        :type request: bytes
+
+        :returns: response data
+        :rtype: bytes
         """
         self.write(request)
         response = self.read()
@@ -268,12 +286,14 @@ class Device(object, metaclass=DeviceMeta):
         self.query(bytes(request))
 
     def get_colors(self):
-        '''
+        """
         Get LED colors.
 
         :returns: colors object
         :rtype: `class`:rog.colors.Colors:
-        '''
+        """
+        logger.debug('getting LED colors')
+
         request = [0] * 64
         request[0] = 0x12
         request[1] = 0x03
@@ -284,13 +304,21 @@ class Device(object, metaclass=DeviceMeta):
         return colors
 
     def set_colors(self, colors: Colors):
+        """
+        Set LED colors.
+
+        :param colors: colors object
+        :type colors: `class`:rog.colors.Colors:
+        """
+        logger.debug('setting LED colors')
+
         for color, r, g, b, brightness in iter(colors):
             for led_name, led_id in defs.LED_NAMES.items():
                 if led_id == color + 1:
                     self.set_color(led_name, (r, g, b), brightness=brightness)
 
     def set_color(self, name, color, mode='default', brightness=4):
-        '''
+        """
         Set LED color.
 
         :param name: led name (logo, wheel, bottom, all)
@@ -304,9 +332,13 @@ class Device(object, metaclass=DeviceMeta):
 
         :param brightness: brightness level (0-4)
         :type brightness: int
-        '''
+        """
         if brightness not in list(range(5)):
-            brightness = 0
+            brightness = 4
+
+        logger.debug(
+            'setting LED {} color to rgb({},{},{}) with mode {} and brightness {}'
+            .format(name, color[0], color[1], color[2], mode, brightness))
 
         request = [0] * 64
         request[0] = 0x51
@@ -354,7 +386,7 @@ class Device(object, metaclass=DeviceMeta):
         # request[2] = 0x01
         self.query(bytes(request))
 
-    def get_dpi_rate(self):
+    def get_dpi_rate_response_snapping(self):
         """
         Get current DPI and rate.
         """
@@ -367,8 +399,9 @@ class Device(object, metaclass=DeviceMeta):
         dpi1 = response[4] * 50 + 50  # DPI preset 1
         dpi2 = response[6] * 50 + 50  # DPI preset 2
         rate = defs.POLLING_RATES[response[8]]
-        undef = response[10]
-        return dpi1, dpi2, rate, undef
+        bresponse = (response[10] + 1) * 4
+        snapping = response[12] + 1
+        return dpi1, dpi2, rate, bresponse, snapping
 
     def set_dpi(self, dpi: int, preset=1):
         """
@@ -390,6 +423,61 @@ class Device(object, metaclass=DeviceMeta):
         request[1] = 0x31
         request[2] = preset - 1
         request[4] = int((dpi - 50) / 50)
+        self.query(bytes(request))
+
+    def set_rate(self, rate: int):
+        """
+        Set polling rate.
+
+        :param dpi: rate in Hz
+        :type dpi: int
+        """
+        rates = {v: k for k, v in defs.POLLING_RATES.items()}
+
+        logger.debug('setting polling rate to {}'.format(rate))
+
+        request = [0] * 64
+        request[0] = 0x51
+        request[1] = 0x31
+        request[2] = 0x02
+        request[4] = rates.get(rate, 0)
+        self.query(bytes(request))
+
+    def set_response(self, response: int):
+        """
+        Set button response.
+
+        :param dpi: response in ms (4, 8, 12, 16, 20, 24, 28, 32)
+        :type dpi: int
+        """
+        rtype = int(round(response / 4))
+
+        logger.debug('setting button response to {} ms'.format(rtype * 4))
+
+        request = [0] * 64
+        request[0] = 0x51
+        request[1] = 0x31
+        request[2] = 0x03
+        request[4] = rtype - 1
+        self.query(bytes(request))
+
+    def set_snapping(self, stype: int):
+        """
+        Set angle snapping type.
+
+        :param stype: snapping type (1 or 2)
+        :type stype: int
+        """
+        if stype not in (1, 2):
+            stype = 1
+
+        logger.debug('setting angle snapping type to {}'.format(stype))
+
+        request = [0] * 64
+        request[0] = 0x51
+        request[1] = 0x31
+        request[2] = 0x04
+        request[4] = stype - 1
         self.query(bytes(request))
 
     def get_sleep(self):
@@ -421,24 +509,6 @@ class Device(object, metaclass=DeviceMeta):
         request[4] = times.get(t, times[0])
         self.query(bytes(request))
 
-    def set_rate(self, rate: int):
-        """
-        Set polling rate.
-
-        :param dpi: rate in Hz
-        :type dpi: int
-        """
-        rates = {v: k for k, v in defs.POLLING_RATES.items()}
-
-        logger.debug('setting polling rate to {}'.format(rate))
-
-        request = [0] * 64
-        request[0] = 0x51
-        request[1] = 0x31
-        request[2] = 0x02
-        request[4] = rates.get(rate, 0)
-        self.query(bytes(request))
-
     def dump(self, f=None):
         data = {}
         saved_profile = self.get_profile()
@@ -446,12 +516,14 @@ class Device(object, metaclass=DeviceMeta):
         for profile in range(1, self.profiles + 1):
             self.set_profile(profile)
 
-            dpi1, dpi2, rate, undef = self.get_dpi_rate()
+            dpi1, dpi2, rate, response, snapping = self.get_dpi_rate_response_snapping()
 
             profile_data = {
                 'bindings': self.get_bindings().export(),
                 'dpi': [dpi1, dpi2],
                 'rate': rate,
+                'response': response,
+                'snapping': snapping,
             }
 
             if self.leds:
@@ -463,6 +535,7 @@ class Device(object, metaclass=DeviceMeta):
             data[str(profile)] = profile_data
 
         self.set_profile(saved_profile)
+
         if f is not None:
             json.dump(data, f, indent=4)
         else:
@@ -486,6 +559,12 @@ class Device(object, metaclass=DeviceMeta):
 
             if 'rate' in profile_data:
                 self.set_rate(profile_data['rate'])
+
+            if 'response' in profile_data:
+                self.set_response(profile_data['response'])
+
+            if 'snapping' in profile_data:
+                self.set_snapping(profile_data['snapping'])
 
             if 'colors' in profile_data:
                 colors = Colors()
@@ -523,7 +602,6 @@ class StrixCarry(Device):
     product_id = 0X18B4
     profiles = 3
     buttons = 8
-    leds = 0
     wireless = True
     keyboard_interface = 2
     control_interface = 1
