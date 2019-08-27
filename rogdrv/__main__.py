@@ -18,9 +18,10 @@ import os
 import signal
 import sys
 import threading
+import logging
 
 from . import defs
-from .device import EventHandler, DeviceManager
+from .device import EventHandler, get_device
 
 
 def rogdrv():
@@ -35,7 +36,7 @@ def rogdrv():
 ''')
         return
 
-    device = DeviceManager.get_device()
+    device = get_device()
     handler = EventHandler()
 
     def loop():
@@ -56,17 +57,31 @@ def rogdrv():
 
 
 def rogdrv_config():
-    '''
+    """
     Mouse configuration tool
-    '''
-    # device = Pugio()
+    """
+    args = list(sys.argv)
+
+    if '--debug' in args:
+        args.pop(args.index('--debug'))
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format='[%(asctime)s] [%(levelname)s] %(message)s')
+
+    # from .device import StrixCarry
+    # device = StrixCarry()
     # request = [0] * 64
     # request[0] = 0x12
-    # request[1] = 0x00
+    # # request[1] = 0x00
+    # request[1] = 0x07
     # print(list(device.query(bytes(request))))
+    # print(''.join(
+    #     '{:02x}'.format(i)
+    #     for i in device.query(bytes(request))))
+    # return
 
-    if len(sys.argv) >= 2:
-        if sys.argv[1] == 'actions':
+    if len(args) >= 2:
+        if args[1] == 'actions':
             print('Keyboard actions:')
             for action, name in defs.ACTIONS_KEYBOARD.items():
                 print('  {action} (0x{action:02X}): {name}'.format(**{
@@ -84,15 +99,15 @@ def rogdrv_config():
 
             return
 
-        elif sys.argv[1] == 'bind':
-            device = DeviceManager.get_device()
+        elif args[1] == 'bind':
+            device = get_device()
             if not device:
                 print('Device not found')
                 return
 
-            if len(sys.argv) >= 4:
-                button = int(sys.argv[2])
-                action = sys.argv[3].lower()
+            if len(args) >= 4:
+                button = int(args[2])
+                action = args[3].lower()
                 if action.startswith('0x'):
                     action = int(action, 16)
                 else:
@@ -103,26 +118,26 @@ def rogdrv_config():
             print(device.get_bindings())
             return
 
-        elif sys.argv[1] == 'color':
-            device = DeviceManager.get_device()
+        elif args[1] == 'color':
+            device = get_device()
             if not device:
                 print('Device not found')
                 return
 
-            if len(sys.argv) >= 6:
-                name = sys.argv[2]
+            if len(args) >= 6:
+                name = args[2]
 
-                r = int(sys.argv[3])
-                g = int(sys.argv[4])
-                b = int(sys.argv[5])
+                r = int(args[3])
+                g = int(args[4])
+                b = int(args[5])
 
-                if len(sys.argv) >= 7:
-                    mode = sys.argv[6]
+                if len(args) >= 7:
+                    mode = args[6]
                 else:
                     mode = 'default'
 
-                if len(sys.argv) >= 8:
-                    brightness = int(sys.argv[7])
+                if len(args) >= 8:
+                    brightness = int(args[7])
                 else:
                     brightness = 4
 
@@ -133,8 +148,8 @@ def rogdrv_config():
             print(device.get_colors())
             return
 
-        elif sys.argv[1] == 'profile':
-            device = DeviceManager.get_device()
+        elif args[1] == 'profile':
+            device = get_device()
             if not device:
                 print('Device not found')
                 return
@@ -143,26 +158,46 @@ def rogdrv_config():
                 print('Profiles not supported')
                 return
 
-            if len(sys.argv) >= 3:
-                device.set_profile(int(sys.argv[2]))
+            if len(args) >= 3:
+                device.set_profile(int(args[2]))
 
             profile = device.get_profile()
             print('Profile: {}'.format(profile))
             return
 
-        elif sys.argv[1] == 'dpi':
-            device = DeviceManager.get_device()
+        elif args[1] == 'sleep':
+            device = get_device()
             if not device:
                 print('Device not found')
                 return
 
-            if len(sys.argv) >= 3:
-                if len(sys.argv) >= 4:
-                    type_ = int(sys.argv[3])
+            if not device.wireless:
+                print('Device is not wireless')
+                return
+
+            if len(args) >= 3:
+                device.set_sleep(int(args[2]))
+
+            t = device.get_sleep()
+            if t:
+                print('Sleep: {} min.'.format(t))
+            else:
+                print("Don't sleep".format(t))
+            return
+
+        elif args[1] == 'dpi':
+            device = get_device()
+            if not device:
+                print('Device not found')
+                return
+
+            if len(args) >= 3:
+                if len(args) >= 4:
+                    type_ = int(args[3])
                 else:
                     type_ = 1
 
-                device.set_dpi(int(sys.argv[2]), type_=type_)
+                device.set_dpi(int(args[2]), type_=type_)
                 device.save()
 
             dpi1, dpi2, rate, undef = device.get_dpi_rate()
@@ -170,54 +205,54 @@ def rogdrv_config():
             print('DPI 2: {}'.format(dpi2))
             return
 
-        elif sys.argv[1] == 'rate':
-            device = DeviceManager.get_device()
+        elif args[1] == 'rate':
+            device = get_device()
             if not device:
                 print('Device not found')
                 return
 
-            if len(sys.argv) >= 3:
-                device.set_rate(int(sys.argv[2]))
+            if len(args) >= 3:
+                device.set_rate(int(args[2]))
                 device.save()
 
             dpi1, dpi2, rate, undef = device.get_dpi_rate()
             print('Polling rate: {}'.format(rate))
             return
 
-        elif sys.argv[1] == 'dump':
-            device = DeviceManager.get_device()
+        elif args[1] == 'dump':
+            device = get_device()
             if not device:
                 print('Device not found')
                 return
 
-            if len(sys.argv) >= 3:
-                with open(sys.argv[2], 'w') as f:
+            if len(args) >= 3:
+                with open(args[2], 'w') as f:
                     device.dump(f)
 
-            print('Settings saved into: {}'.format(sys.argv[2]))
+            print('Settings saved into: {}'.format(args[2]))
             return
 
-        elif sys.argv[1] == 'load':
-            device = DeviceManager.get_device()
+        elif args[1] == 'load':
+            device = get_device()
             if not device:
                 print('Device not found')
                 return
 
-            if len(sys.argv) >= 3:
-                with open(sys.argv[2], 'r') as f:
+            if len(args) >= 3:
+                with open(args[2], 'r') as f:
                     device.load(f)
 
-            print('Settings loaded from: {}'.format(sys.argv[2]))
+            print('Settings loaded from: {}'.format(args[2]))
             return
 
-        elif sys.argv[1] == '--help':
+        elif args[1] == '--help':
             print('''Usage:
   rogdrv-config --help                            - display help
 
   rogdrv-config actions                           - display list of actions
 
   rogdrv-config bind [button action]              - bind a button or display list of bindings
-    button: button no. (1-10)
+    button: button no. (1-99)
     action: action code (241 or 0xF1 or 0xf1)
 
   rogdrv-config color [name r g b [mode] [brght]] - get/set LED colors

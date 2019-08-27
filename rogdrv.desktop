@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=ASUS ROG Mouse Driver
+Comment=ASUS ROG Mouse Driver
+Icon=rog
+Exec=rogdrv
+Terminal=false
+Type=Application
+Categories=GTK;GNOME;Settings;HardwareSettings;
+StartupNotify=false

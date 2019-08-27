@@ -150,3 +150,12 @@ BUTTON_SLOTS = {
     9: 0xE1,  # right backward
     10: 0xE2,  # right forward
 }
+
+SLEEP_TIME = {
+    0x00: 1,  # 1 minute
+    0x01: 2,  # 2 minutes
+    0x02: 3,  # 3 minutes
+    0x03: 5,  # 5 minutes
+    0x04: 10,  # 10 minutes
+    0xff: 0,  # don't sleep
+}

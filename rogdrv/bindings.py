@@ -35,8 +35,8 @@ def get_action_name(action):
 
 
 class Bindings(object):
-    def __init__(self):
-        self._actions = collections.OrderedDict((
+    def __init__(self, buttons: int):
+        defaults = (
             (1, defs.ACTIONS_MOUSE_NAMES['MOUSE_LEFT']),
             (2, defs.ACTIONS_MOUSE_NAMES['MOUSE_RIGHT']),
             (3, defs.ACTIONS_MOUSE_NAMES['MOUSE_MIDDLE']),
@@ -47,10 +47,13 @@ class Bindings(object):
             (8, defs.ACTIONS_MOUSE_NAMES['MOUSE_FORWARD']),
             (9, defs.ACTIONS_MOUSE_NAMES['MOUSE_BACKWARD']),
             (10, defs.ACTIONS_MOUSE_NAMES['MOUSE_FORWARD']),
-        ))
+        )
+
+        self._buttons = buttons
+        self._actions = collections.OrderedDict(defaults[:buttons])
 
         self._types = collections.OrderedDict()
-        for i in range(1, 10+1):
+        for i in range(1, self._buttons + 1):
             self._types[i] = defs.ACTION_TYPE_MOUSE
 
     def bind(self, button, action, type_=None):
@@ -59,7 +62,7 @@ class Bindings(object):
 
     def load(self, data):
         if type(data) == dict:
-            for i in range(1, 10 + 1):
+            for i in range(1, self._buttons + 1):
                 action_type = data['action_type_{}'.format(i)]
                 if action_type == 'MOUSE':
                     self.bind(
@@ -113,3 +116,8 @@ class Bindings(object):
 9 (R.BACKWARD):\t[{action_type_9}] {action_name_9} (0x{action_code_9:02X})
 10 (R.FORWARD):\t[{action_type_10}] {action_name_10} (0x{action_code_10:02X})
 '''.format(**self.export())
+
+    def __str2__(self):
+        lines = []
+        for i in range(1, self._buttons + 1):
+            lines.append('{:02d}'.format(i + 1))

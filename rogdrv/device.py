@@ -16,12 +16,15 @@
 
 import json
 import hidapi
+import logging
 
 from evdev import uinput, ecodes
 
 from . import defs
 from .bindings import Bindings, get_action_type
 from .colors import Colors
+
+logger = logging.getLogger('rogdrv')
 
 
 class EventHandler(object):
@@ -30,9 +33,9 @@ class EventHandler(object):
         self._last_pressed = set()
 
     def handle_event(self, pressed):
-        '''
+        """
         Handle event. Generates regular evdev/uinput events.
-        '''
+        """
         # release buttons
         released = self._last_pressed - pressed
         for code in released:
@@ -57,38 +60,70 @@ class DeviceNotFound(Exception):
     pass
 
 
-class Device(object):
+class DeviceError(Exception):
+    pass
+
+
+class DeviceMeta(type):
+    device_classes = []
+
+    def __new__(cls, classname, superclasses, attributedict):
+        c = type.__new__(cls, classname, superclasses, attributedict)
+        if classname != 'Device':
+            cls.device_classes.append(c)
+        return c
+
+
+class Device(object, metaclass=DeviceMeta):
     vendor_id = 0x0b05
     profiles = 0
+    buttons = 0
+    wireless = False
+    keyboard_interface = 1
+    control_interface = 2
 
     def __init__(self):
+        logger.debug(
+            'searching for device {} with Vendor ID {} and Product ID {}'
+            .format(self.__class__.__name__, self.vendor_id, self.product_id))
+
         devices = tuple(hidapi.enumerate(
             vendor_id=self.vendor_id,
             product_id=self.product_id))
+
+        if len(devices):
+            logger.debug('found {} devices:'.format(len(devices)))
+            for device in devices:
+                logger.debug(
+                    '{}, interface {}'
+                    .format(device, device.interface_number))
+        else:
+            logger.debug('0 devices found')
+
         if not devices:
             raise DeviceNotFound()
 
         # keyboard subdevice
         kbd_info = next(filter(
-            lambda x: x.interface_number == 1, devices), None)
+            lambda x: x.interface_number == self.keyboard_interface, devices), None)
         # control subdevice
         ctl_info = next(filter(
-            lambda x: x.interface_number == 2, devices), None)
+            lambda x: x.interface_number == self.control_interface, devices), None)
 
-        self._kbd = hidapi.Device(kbd_info)
+        # self._kbd = hidapi.Device(kbd_info)
         self._ctl = hidapi.Device(ctl_info)
 
     def close(self):
-        self._kbd.close()
+        # self._kbd.close()
         self._ctl.close()
 
     def next_event(self):
-        '''
+        """
         Get virtual keyboard event.
 
         :returns: pressed keys
         :rtype: set
-        '''
+        """
         data = self._kbd.read(256, blocking=True)
 
         # TODO: implement modifiers
@@ -110,28 +145,37 @@ class Device(object):
         return pressed
 
     def read(self):
-        '''
+        """
         Read data from control subdevice.
-        '''
-        return self._ctl.read(64, blocking=True)
+        """
+        data = self._ctl.read(64, blocking=True)
+        logger.debug('< ' + ' '.join('{:02x}'.format(i) for i in data))
+        return data
 
     def write(self, data):
-        '''
+        """
         Read data into control subdevice.
-        '''
+        """
+        logger.debug('> ' + ' '.join('{:02x}'.format(i) for i in data))
         self._ctl.write(data)
 
-    def query(self, data):
-        '''
+    def query(self, request):
+        """
         Query (write then read) control subdevice.
-        '''
-        self.write(data)
-        return self.read()
+        """
+        self.write(request)
+        response = self.read()
+
+        if response[0] == 0xff and response[1] == 0xaa:
+            raise DeviceError()
+
+        return response
 
     def save(self):
-        '''
+        """
         Saves the current changes.
-        '''
+        """
+        logger.debug('saving setting')
         request = [0] * 64
         request[0] = 0x50
         request[1] = 0x03
@@ -148,7 +192,7 @@ class Device(object):
         request[0] = 0x12
         request[1] = 0x05
         response = self.query(bytes(request))
-        bindings = Bindings()
+        bindings = Bindings(self.buttons)
         bindings.load(response)
         return bindings
 
@@ -230,26 +274,32 @@ class Device(object):
         self.query(bytes(request))
 
     def get_profile(self):
-        '''
+        """
         Get profile.
-        '''
+
+        :returns: profile number (1-3)
+        :rtype: int
+        """
+        logger.debug('getting profile')
         request = [0] * 64
         request[0] = 0x12
         response = self.query(bytes(request))
         return response[10] + 1
 
     def set_profile(self, profile: int):
-        '''
+        """
         Set profile.
 
-        :param profile: profile number
+        :param profile: profile number (1-3)
         :type prifile: int
-        '''
+        """
         if profile < 1:
             profile = 1
 
         if profile > self.profiles:
             profile = 1
+
+        logger.debug('setting profile to {}'.format(profile))
 
         request = [0] * 64
         request[0] = 0x50
@@ -291,6 +341,32 @@ class Device(object):
         request[1] = 0x31
         request[2] = type_ - 1
         request[4] = int((dpi - 50) / 50)
+        self.query(bytes(request))
+
+    def get_sleep(self):
+        """
+        Get current sleep timeout.
+        """
+        request = [0] * 64
+        request[0] = 0x12
+        request[1] = 0x07
+        response = self.query(bytes(request))
+
+        return defs.SLEEP_TIME[response[4]]
+
+    def set_sleep(self, t=0):
+        """
+        Set sleep timeout in minutes.
+
+        :param t: time in minutes: 0 (don't sleep), 1, 2, 3, 5, 10
+        :type t: int
+        """
+        times = {v: k for k, v in defs.SLEEP_TIME.items()}
+
+        request = [0] * 64
+        request[0] = 0x51
+        request[1] = 0x37
+        request[4] = times.get(t, times[0])
         self.query(bytes(request))
 
     def set_rate(self, rate: int):
@@ -343,7 +419,7 @@ class Device(object):
             colors.load(profile_data['colors'])
             self.set_colors(colors)
 
-            bindings = Bindings()
+            bindings = Bindings(self.buttons)
             bindings.load(profile_data['bindings'])
             self.set_bindings(bindings)
 
@@ -355,29 +431,45 @@ class Device(object):
 class Pugio(Device):
     product_id = 0x1846
     profiles = 3
+    buttons = 10
+    leds = 3
+
+
+class StrixCarry(Device):
+    product_id = 0x18b4
+    profiles = 3
+    buttons = 8
+    leds = 0
+    wireless = True
+    keyboard_interface = 2
+    control_interface = 1
+
+    def get_profile(self):
+        logger.debug('getting profile')
+        request = [0] * 64
+        request[0] = 0x12
+        response = self.query(bytes(request))
+        return response[9] + 1
 
 
 class StrixImpact(Device):
     product_id = 0x1847
     profiles = 0
+    buttons = 8
+    leds = 3
 
 
 class Spatha(Device):
     product_id = 0x1824
     profiles = 3
+    buttons = 8
+    leds = 3
+    wireless = True
 
 
-class DeviceManager(object):
-    device_classes = (
-        Pugio,
-        StrixImpact,
-        Spatha,
-    )
-
-    @classmethod
-    def get_device(cls):
-        for device_class in cls.device_classes:
-            try:
-                return device_class()
-            except DeviceNotFound:
-                pass
+def get_device():
+    for device_class in DeviceMeta.device_classes:
+        try:
+            return device_class()
+        except DeviceNotFound:
+            pass
