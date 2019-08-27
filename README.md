@@ -8,6 +8,16 @@ So this driver maps HID events to the generic keyboard events.
 
 The protocol was reverse-engineered, so everything is experimental. Use at your own risk.
 
+Features
+--------
+
+* Virtual uinput device
+* Profiles switching
+* Buttons binding
+* DPI setting
+* Polling rate setting
+* LED colors customization
+
 Supported devices
 -----------------
 
@@ -35,16 +45,6 @@ implement and test all the features.
 
 There is a chance that a driver can be compatible with other mouse devices
 from ASUS ROG (Republic of Gamers) series.
-
-Features
---------
-
-* Virtual uinput device
-* Profiles switching
-* Buttons bindings
-* DPI setting
-* Polling rate setting
-* LED colors customization
 
 Requirements
 ------------

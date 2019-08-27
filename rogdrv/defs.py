@@ -16,6 +16,7 @@
 
 
 ACTIONS_KEYBOARD = {
+    0: 'UNDEFINED',
     4: 'KEY_A',
     5: 'KEY_B',
     6: 'KEY_C',
@@ -94,8 +95,6 @@ ACTIONS_KEYBOARD = {
 }
 
 ACTIONS_MOUSE = {
-    225: '???',
-    226: '???',
     0xF0: 'MOUSE_LEFT',
     0xF1: 'MOUSE_RIGHT',
     0xF2: 'MOUSE_MIDDLE',
@@ -105,6 +104,8 @@ ACTIONS_MOUSE = {
     0xE8: 'MOUSE_SCROLL_UP',
     0xE9: 'MOUSE_SCROLL_DOWN',
     0xFF: 'MOUSE_DISABLED',
+    0xE1: 'MOUSE_BACKWARD_ALT',
+    0xE2: 'MOUSE_FORWARD_ALT',
 }
 
 ACTIONS_MOUSE_NAMES = {v: k for k, v in ACTIONS_MOUSE.items()}

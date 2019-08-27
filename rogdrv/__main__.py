@@ -115,6 +115,7 @@ def rogdrv_config():
                 device.bind(button, action)
                 device.save()
 
+            print('Bindings:')
             print(device.get_bindings())
             return
 
@@ -122,6 +123,10 @@ def rogdrv_config():
             device = get_device()
             if not device:
                 print('Device not found')
+                return
+
+            if not device.leds:
+                print("Device does'n have any LEDs")
                 return
 
             if len(args) >= 6:

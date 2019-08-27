@@ -83,9 +83,20 @@ def get_device():
 
 
 class Device(object, metaclass=DeviceMeta):
-    vendor_id = 0x0b05
+    vendor_id = 0X0B05
     profiles = 0
     buttons = 0
+    buttons_mapping = {
+        1: 1,
+        2: 2,
+        3: 3,
+        4: 7,
+        5: 8,
+        6: 6,
+        7: 4,
+        8: 5,
+    }
+    leds = 0
     wireless = False
     keyboard_interface = 1
     control_interface = 2
@@ -100,10 +111,17 @@ class Device(object, metaclass=DeviceMeta):
         if len(devices):
             logger.debug('found {} subdevices:'.format(len(devices)))
             for device in devices:
+                interface = ''
+                if device.interface_number == self.keyboard_interface:
+                    interface = ' [keyboard]'
+                elif device.interface_number == self.control_interface:
+                    interface = ' [control]'
+
                 logger.debug(
-                    '{}: {} {} interface {}'
+                    '{}: {} {} interface {}{}'
                     .format(device.path.decode(), device.manufacturer_string,
-                            device.product_string, device.interface_number))
+                            device.product_string, device.interface_number,
+                            interface))
         else:
             logger.debug('0 devices found')
 
@@ -122,7 +140,7 @@ class Device(object, metaclass=DeviceMeta):
 
     @classmethod
     def info(cls):
-        return '{} (VendorID: {}, ProductID: {})'.format(
+        return '{} (VendorID: 0x{:04X}, ProductID: 0x{:04X})'.format(
             cls.__name__, cls.vendor_id, cls.product_id)
 
     def close(self):
@@ -161,14 +179,14 @@ class Device(object, metaclass=DeviceMeta):
         Read data from control subdevice.
         """
         data = self._ctl.read(64, blocking=True)
-        logger.debug('< ' + ' '.join('{:02x}'.format(i) for i in data))
+        logger.debug('< ' + ' '.join('{:02X}'.format(i) for i in data))
         return data
 
     def write(self, data):
         """
         Read data into control subdevice.
         """
-        logger.debug('> ' + ' '.join('{:02x}'.format(i) for i in data))
+        logger.debug('> ' + ' '.join('{:02X}'.format(i) for i in data))
         self._ctl.write(data)
 
     def query(self, request):
@@ -204,8 +222,15 @@ class Device(object, metaclass=DeviceMeta):
         request[0] = 0x12
         request[1] = 0x05
         response = self.query(bytes(request))
+
         bindings = Bindings(self.buttons)
-        bindings.load(response)
+        for btn, idx in self.buttons_mapping.items():
+            if btn <= self.buttons:
+                bindings.bind(
+                    btn,
+                    response[idx * 2 + 2],
+                    response[idx * 2 + 2 + 1])
+
         return bindings
 
     def set_bindings(self, bindings: Bindings):
@@ -452,11 +477,23 @@ class Pugio(Device):
     product_id = 0x1846
     profiles = 3
     buttons = 10
+    buttons_mapping = {
+        1: 1,
+        2: 2,
+        3: 3,
+        4: 8,
+        5: 9,
+        6: 6,
+        7: 4,
+        8: 5,
+        9: 10,
+        10: 11,
+    }
     leds = 3
 
 
 class StrixCarry(Device):
-    product_id = 0x18b4
+    product_id = 0X18B4
     profiles = 3
     buttons = 8
     leds = 0
@@ -479,7 +516,7 @@ class StrixImpact(Device):
 
 
 class StrixEvolve(Device):
-    product_id = 0x185b
+    product_id = 0X185B
     buttons = 8
     leds = 3
 

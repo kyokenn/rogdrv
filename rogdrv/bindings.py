@@ -36,88 +36,99 @@ def get_action_name(action):
 
 class Bindings(object):
     def __init__(self, buttons: int):
-        defaults = (
-            (1, defs.ACTIONS_MOUSE_NAMES['MOUSE_LEFT']),
-            (2, defs.ACTIONS_MOUSE_NAMES['MOUSE_RIGHT']),
-            (3, defs.ACTIONS_MOUSE_NAMES['MOUSE_MIDDLE']),
-            (4, defs.ACTIONS_MOUSE_NAMES['MOUSE_SCROLL_UP']),
-            (5, defs.ACTIONS_MOUSE_NAMES['MOUSE_SCROLL_DOWN']),
-            (6, defs.ACTIONS_MOUSE_NAMES['MOUSE_DPI']),
-            (7, defs.ACTIONS_MOUSE_NAMES['MOUSE_BACKWARD']),
-            (8, defs.ACTIONS_MOUSE_NAMES['MOUSE_FORWARD']),
-            (9, defs.ACTIONS_MOUSE_NAMES['MOUSE_BACKWARD']),
-            (10, defs.ACTIONS_MOUSE_NAMES['MOUSE_FORWARD']),
+        """
+        Creates a new Binding storage structure.
+
+        :param buttons: number of buttons available
+        :type buttons: int
+        """
+        # mouse button, action type, action
+        DEFAULTS = (
+            (1, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_LEFT']),
+            (2, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_RIGHT']),
+            (3, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_MIDDLE']),
+            (4, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_SCROLL_UP']),
+            (5, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_SCROLL_DOWN']),
+            (6, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_DPI']),
+            (7, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_BACKWARD']),
+            (8, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_FORWARD']),
+            (9, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_BACKWARD']),
+            (10, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_FORWARD']),
         )
 
         self._buttons = buttons
-        self._actions = collections.OrderedDict(defaults[:buttons])
-
-        self._types = collections.OrderedDict()
-        for i in range(1, self._buttons + 1):
-            self._types[i] = defs.ACTION_TYPE_MOUSE
+        self._actions = collections.OrderedDict(
+            (btn, (act, tp)) for (btn, tp, act) in DEFAULTS[:buttons])
 
     def bind(self, button, action, type_=None):
-        self._actions[button] = action
-        self._types[button] = type_ or get_action_type(action)
+        """
+        Bind mouse button to specified action and action type.
+
+        :param button: button number to bind (1-10)
+        :type button: int
+
+        :param action: action to bind
+        :type action: int
+
+        :param type_: action type_, leave None to autodetect
+        :type type_: int
+        """
+        self._actions[button] = action, type_ or get_action_type(action)
 
     def load(self, data):
-        if type(data) == dict:
-            for i in range(1, self._buttons + 1):
-                action_type = data['action_type_{}'.format(i)]
-                if action_type == 'MOUSE':
-                    self.bind(
-                        i, data['action_code_{}'.format(i)],
-                        defs.ACTION_TYPE_MOUSE)
-                elif action_type == 'KEYB.':
-                    self.bind(
-                        i, data['action_code_{}'.format(i)],
-                        defs.ACTION_TYPE_KEYBOARD)
-
-        else:
-            self.bind(1, data[4], data[5])
-            self.bind(2, data[6], data[7])
-            self.bind(3, data[8], data[9])
-            self.bind(7, data[10], data[11])
-            self.bind(8, data[12], data[13])
-            self.bind(6, data[14], data[15])
-            self.bind(4, data[18], data[19])
-            self.bind(5, data[20], data[21])
-            self.bind(9, data[22], data[23])
-            self.bind(10, data[24], data[25])
+        for i in range(1, self._buttons + 1):
+            action_type = data['action_type_{}'.format(i)]
+            if action_type == 'MOUSE':
+                self.bind(
+                    i, data['action_code_{}'.format(i)],
+                    defs.ACTION_TYPE_MOUSE)
+            elif action_type == 'KEYB.':
+                self.bind(
+                    i, data['action_code_{}'.format(i)],
+                    defs.ACTION_TYPE_KEYBOARD)
 
     def export(self):
-        data = {}
-        for k, v in self._actions.items():
-            data['action_code_{}'.format(k)] = v
-            data['action_name_{}'.format(k)] = get_action_name(v)
-        for k, v in self._types.items():
-            if v == defs.ACTION_TYPE_MOUSE:
-                type_ = 'MOUSE'
-            elif v == defs.ACTION_TYPE_KEYBOARD:
-                type_ = 'KEYB.'
+        data = []
+
+        for btn, (act, tp) in self._actions.items():
+            item = {}
+
+            item['code'] = act
+            item['name'] = get_action_name(act)
+
+            if tp == defs.ACTION_TYPE_MOUSE:
+                item['type'] = 'MOUSE'
+            elif tp == defs.ACTION_TYPE_KEYBOARD:
+                item['type'] = 'KEYB.'
             else:
-                type_ = 'UNKN.'
-            data['action_type_{}'.format(k)] = type_
-        return data
+                item['type'] = 'UNKN.'
+
+            data.append((str(btn), item))
+
+        return collections.OrderedDict(data)
 
     def __iter__(self):
-        for button, action in self._actions.items():
-            yield button, action, self._types[button]
+        for btn, (act, tp) in self._actions.items():
+            yield btn, act, tp
+
+#     def __str__(self):
+#         return '''1 (LEFT):\t[{action_type_1}] {action_name_1} (0x{action_code_1:02X})
+# 2 (RIGHT):\t[{action_type_2}] {action_name_2} (0x{action_code_2:02X})
+# 3 (MIDDLE):\t[{action_type_3}] {action_name_3} (0x{action_code_3:02X})
+# 4 (SCR.UP):\t[{action_type_4}] {action_name_4} (0x{action_code_4:02X})
+# 5 (SCR.DOWN):\t[{action_type_5}] {action_name_5} (0x{action_code_5:02X})
+# 6 (DPI):\t[{action_type_6}] {action_name_6} (0x{action_code_6:02X})
+# 7 (L.BACKWARD):\t[{action_type_7}] {action_name_7} (0x{action_code_7:02X})
+# 8 (L.FORWARD):\t[{action_type_8}] {action_name_8} (0x{action_code_8:02X})
+# 9 (R.BACKWARD):\t[{action_type_9}] {action_name_9} (0x{action_code_9:02X})
+# 10 (R.FORWARD):\t[{action_type_10}] {action_name_10} (0x{action_code_10:02X})
+# '''.format(**self.export())
 
     def __str__(self):
-        return '''1 (LEFT):\t[{action_type_1}] {action_name_1} (0x{action_code_1:02X})
-2 (RIGHT):\t[{action_type_2}] {action_name_2} (0x{action_code_2:02X})
-3 (MIDDLE):\t[{action_type_3}] {action_name_3} (0x{action_code_3:02X})
-4 (SCR.UP):\t[{action_type_4}] {action_name_4} (0x{action_code_4:02X})
-5 (SCR.DOWN):\t[{action_type_5}] {action_name_5} (0x{action_code_5:02X})
-6 (DPI):\t[{action_type_6}] {action_name_6} (0x{action_code_6:02X})
-7 (L.BACKWARD):\t[{action_type_7}] {action_name_7} (0x{action_code_7:02X})
-8 (L.FORWARD):\t[{action_type_8}] {action_name_8} (0x{action_code_8:02X})
-9 (R.BACKWARD):\t[{action_type_9}] {action_name_9} (0x{action_code_9:02X})
-10 (R.FORWARD):\t[{action_type_10}] {action_name_10} (0x{action_code_10:02X})
-'''.format(**self.export())
-
-    def __str2__(self):
         lines = []
-        for i in range(1, self._buttons + 1):
-            lines.append('{:02d}'.format(i + 1))
+
+        for btn, item in self.export().items():
+            lines.append('{:02d} | {} | 0x{:02X} {}'.format(
+                int(btn), item['type'], item['code'], item['name']))
+
+        return '\n'.join(lines)
