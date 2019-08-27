@@ -63,16 +63,26 @@ Installation
 ------------
 
 Userspace driver installation:
+
 ```
 sudo python3 setup.py install
+```
+or
+```
+sudo pip3 install .
 ```
 
 You need r/w permissions for /dev/hidrawX file of your mouse.
 You can solve this by installing a custom udev rules:
+
 ```
 sudo cp -f udev/50-rogdrv.rules /etc/udev/rules.d/
 sudo udevadm control --reload-rules
 sudo udevadm trigger
+```
+or
+```
+./install_udev.sh
 ```
 
 Using
