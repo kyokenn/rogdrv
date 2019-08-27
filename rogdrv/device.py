@@ -321,9 +321,10 @@ class Device(object, metaclass=DeviceMeta):
         self.query(bytes(request))
 
     def get_dpi_rate(self):
-        '''
+        """
         Get current DPI and rate.
-        '''
+        """
+        logger.debug('getting DPI and polling rate')
         request = [0] * 64
         request[0] = 0x12
         request[1] = 0x04
@@ -336,7 +337,7 @@ class Device(object, metaclass=DeviceMeta):
         return dpi1, dpi2, rate, undef
 
     def set_dpi(self, dpi: int, type_=1):
-        '''
+        """
         Set DPI.
 
         :param dpi: DPI
@@ -344,9 +345,11 @@ class Device(object, metaclass=DeviceMeta):
 
         :param type_: DPI type (1 or 2)
         :type type_: int
-        '''
+        """
         if type_ not in (1, 2):
             type_ = 1
+
+        logger.debug('setting DPI {} to {}'.format(type_, dpi))
 
         request = [0] * 64
         request[0] = 0x51
@@ -359,6 +362,7 @@ class Device(object, metaclass=DeviceMeta):
         """
         Get current sleep timeout.
         """
+        logger.debug('getting sleep timeout')
         request = [0] * 64
         request[0] = 0x12
         request[1] = 0x07
@@ -375,6 +379,8 @@ class Device(object, metaclass=DeviceMeta):
         """
         times = {v: k for k, v in defs.SLEEP_TIME.items()}
 
+        logger.debug('setting sleep timeout to {}'.format(t))
+
         request = [0] * 64
         request[0] = 0x51
         request[1] = 0x37
@@ -382,13 +388,15 @@ class Device(object, metaclass=DeviceMeta):
         self.query(bytes(request))
 
     def set_rate(self, rate: int):
-        '''
+        """
         Set polling rate.
 
         :param dpi: rate in Hz
         :type dpi: int
-        '''
+        """
         rates = {v: k for k, v in defs.POLLING_RATES.items()}
+
+        logger.debug('setting polling rate to {}'.format(rate))
 
         request = [0] * 64
         request[0] = 0x51
@@ -466,7 +474,6 @@ class StrixCarry(Device):
 
 class StrixImpact(Device):
     product_id = 0x1847
-    profiles = 0
     buttons = 8
     leds = 3
 
