@@ -74,6 +74,14 @@ class DeviceMeta(type):
         return c
 
 
+def get_device():
+    for device_class in DeviceMeta.device_classes:
+        try:
+            return device_class()
+        except DeviceNotFound:
+            pass
+
+
 class Device(object, metaclass=DeviceMeta):
     vendor_id = 0x0b05
     profiles = 0
@@ -83,20 +91,19 @@ class Device(object, metaclass=DeviceMeta):
     control_interface = 2
 
     def __init__(self):
-        logger.debug(
-            'searching for device {} with Vendor ID {} and Product ID {}'
-            .format(self.__class__.__name__, self.vendor_id, self.product_id))
+        logger.debug('searching for device {}'.format(self.__class__.info()))
 
         devices = tuple(hidapi.enumerate(
             vendor_id=self.vendor_id,
             product_id=self.product_id))
 
         if len(devices):
-            logger.debug('found {} devices:'.format(len(devices)))
+            logger.debug('found {} subdevices:'.format(len(devices)))
             for device in devices:
                 logger.debug(
-                    '{}, interface {}'
-                    .format(device, device.interface_number))
+                    '{}: {} {} interface {}'
+                    .format(device.path.decode(), device.manufacturer_string,
+                            device.product_string, device.interface_number))
         else:
             logger.debug('0 devices found')
 
@@ -110,11 +117,16 @@ class Device(object, metaclass=DeviceMeta):
         ctl_info = next(filter(
             lambda x: x.interface_number == self.control_interface, devices), None)
 
-        # self._kbd = hidapi.Device(kbd_info)
+        self._kbd = hidapi.Device(kbd_info)
         self._ctl = hidapi.Device(ctl_info)
 
+    @classmethod
+    def info(cls):
+        return '{} (VendorID: {}, ProductID: {})'.format(
+            cls.__name__, cls.vendor_id, cls.product_id)
+
     def close(self):
-        # self._kbd.close()
+        self._kbd.close()
         self._ctl.close()
 
     def next_event(self):
@@ -471,11 +483,3 @@ class Buzzard(Device):
     product_id = 0x1816
     profiles = 3
     buttons = 8
-
-
-def get_device():
-    for device_class in DeviceMeta.device_classes:
-        try:
-            return device_class()
-        except DeviceNotFound:
-            pass
