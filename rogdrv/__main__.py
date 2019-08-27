@@ -304,6 +304,9 @@ def rogdrv_config():
   rogdrv-config response [ms]                     - get/set buttons response
     ms: response in ms (4, 8, 12, 16, 20, 24, 28, 32)
 
+  rogdrv-config snapping [type]                   - get/set angle snapping type
+    type: angle snapping type (1 or 2)
+
   rogdrv-config color [name r g b [mode] [brght]] - get/set LED colors
     name: logo, wheel, bottom, all
     r: red (0-255)
