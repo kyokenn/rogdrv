@@ -1,7 +1,7 @@
 rogdrv
 ======
 
-rogdrv is a simple ASUS ROG userspace mouse driver for Linux.
+rogdrv is a simple ASUS ROG (Republic of Gamers) userspace mouse driver for Linux.
 The mouse device consists of 2 input devices: mouse and keyboard.
 The keyboard part is unsupported on Linux, but it's recognised as HID device.
 So this driver maps HID events to the generic keyboard events.

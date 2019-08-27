@@ -616,20 +616,22 @@ class StrixCarry(Device):
 
 class StrixImpact(Device):
     product_id = 0x1847
-    buttons = 8
-    leds = 3
+    buttons = 6
+    leds = 1
 
 
 class StrixEvolve(Device):
     product_id = 0X185B
     buttons = 8
-    leds = 3
+    leds = 1
 
 
 class Spatha(Device):
     product_id = 0x1824
     profiles = 3
-    buttons = 8
+    # profiles = 6  # unsupported
+    buttons = 10
+    # buttons = 14  # unsupported
     leds = 3
     wireless = True
 
@@ -637,4 +639,4 @@ class Spatha(Device):
 class Buzzard(Device):
     product_id = 0x1816
     profiles = 3
-    buttons = 8
+    buttons = 10
