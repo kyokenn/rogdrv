@@ -637,7 +637,7 @@ class Spatha(Device):
     """
     Spatha on cord.
     """
-    product_id = 0x1824
+    product_id = 0x181C
     profiles = 3
     # profiles = 6  # unsupported
     buttons = 10
@@ -650,7 +650,7 @@ class SpathaWireless(Spatha):
     """
     Spatha in wireless mode.
     """
-    product_id = 0x181C
+    product_id = 0x1824
 
 
 class Buzzard(Device):
