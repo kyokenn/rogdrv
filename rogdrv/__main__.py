@@ -23,6 +23,8 @@ import logging
 from . import defs
 from .device import EventHandler, get_device
 
+logger = logging.getLogger('rogdrv')
+
 
 def rogdrv():
     '''
@@ -58,15 +60,21 @@ def rogdrv():
 
 def rogdrv_config():
     """
-    Mouse configuration tool
+    Mouse configuration tool.
     """
     args = list(sys.argv)
 
     if '--debug' in args:
         args.pop(args.index('--debug'))
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format='[%(asctime)s] [%(levelname)s] %(message)s')
+        # logging.basicConfig(
+        #     level=logging.DEBUG,
+        #     format='[%(asctime)s] [%(levelname)s] %(message)s')
+        formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] %(message)s')
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setFormatter(formatter)
+        handler.setLevel(logging.DEBUG)
+        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG)
 
     # from .device import StrixCarry
     # device = StrixCarry()
