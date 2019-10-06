@@ -83,7 +83,7 @@ def get_device():
 
 
 class Device(object, metaclass=DeviceMeta):
-    vendor_id = 0X0B05
+    vendor_id = 0x0B05
     profiles = 0
     buttons = 0
     buttons_mapping = {
@@ -580,6 +580,9 @@ class Device(object, metaclass=DeviceMeta):
 
 
 class Pugio(Device):
+    """
+    Gladius (8 buttons) based device with extra 2 buttons (10 buttons total).
+    """
     product_id = 0x1846
     profiles = 3
     buttons = 10
@@ -599,7 +602,10 @@ class Pugio(Device):
 
 
 class StrixCarry(Device):
-    product_id = 0X18B4
+    """
+    Wireless only device without any LEDs.
+    """
+    product_id = 0x18B4
     profiles = 3
     buttons = 8
     wireless = True
@@ -607,7 +613,7 @@ class StrixCarry(Device):
     control_interface = 1
 
     def get_profile(self):
-        logger.debug('getting profile')
+        # logger.debug('getting profile')
         request = [0] * 64
         request[0] = 0x12
         response = self.query(bytes(request))
@@ -621,13 +627,16 @@ class StrixImpact(Device):
 
 
 class StrixEvolve(Device):
-    product_id = 0X185B
+    product_id = 0x185B
     profiles = 3
     buttons = 8
     leds = 1
 
 
 class Spatha(Device):
+    """
+    Spatha on cord.
+    """
     product_id = 0x1824
     profiles = 3
     # profiles = 6  # unsupported
@@ -635,6 +644,13 @@ class Spatha(Device):
     # buttons = 14  # unsupported
     leds = 3
     wireless = True
+
+
+class SpathaWireless(Spatha):
+    """
+    Spatha in wireless mode.
+    """
+    product_id = 0x181C
 
 
 class Buzzard(Device):
