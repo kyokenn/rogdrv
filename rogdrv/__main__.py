@@ -66,14 +66,14 @@ def rogdrv_config():
 
     if '--debug' in args:
         args.pop(args.index('--debug'))
-        # logging.basicConfig(
-        #     level=logging.DEBUG,
-        #     format='[%(asctime)s] [%(levelname)s] %(message)s')
-        formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] %(message)s')
-        handler = logging.StreamHandler(sys.stdout)
-        handler.setFormatter(formatter)
-        handler.setLevel(logging.DEBUG)
-        logger.addHandler(handler)
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format='[%(asctime)s] [%(levelname)s] %(message)s')
+        # formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] %(message)s')
+        # handler = logging.StreamHandler(sys.stdout)
+        # handler.setFormatter(formatter)
+        # handler.setLevel(logging.DEBUG)
+        # logger.addHandler(handler)
         logger.setLevel(logging.DEBUG)
 
     # from .device import StrixCarry
