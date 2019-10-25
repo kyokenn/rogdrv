@@ -111,11 +111,17 @@ class Device(object, metaclass=DeviceMeta):
         if len(devices):
             logger.debug('found {} subdevices:'.format(len(devices)))
             for device in devices:
+                # print(device)
+                # print(dir(device))
+                # x = 'interface_number', 'manufacturer_string', 'path', 'product_id', 'product_string', 'release_number', 'serial_number', 'usage', 'usage_page', 'vendor_id'
+                # for i in x:
+                #     print(i, getattr(device, i))
+
                 interface = ''
                 if device.interface_number == self.keyboard_interface:
-                    interface = ' [keyboard]'
+                    interface = ' [using as keyboard]'
                 elif device.interface_number == self.control_interface:
-                    interface = ' [control]'
+                    interface = ' [using as control]'
 
                 logger.debug(
                     '{}: {} {} interface {}{}'
