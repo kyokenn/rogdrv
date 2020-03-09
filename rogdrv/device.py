@@ -587,7 +587,7 @@ class Device(object, metaclass=DeviceMeta):
 
 class Gladius2(Device):
     """
-    ROG Gladius II Origin
+    ROG Gladius II Origin (8 buttons) - wired version, 12k DPI
     """
     product_id = 0x1877
     profiles = 3
@@ -601,8 +601,6 @@ class Gladius2(Device):
         6: 6,
         7: 4,
         8: 5,
-        9: 10,
-        10: 11,
     }
     leds = 3
 
