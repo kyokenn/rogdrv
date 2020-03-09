@@ -13,7 +13,7 @@ Supported devices and features
 
 Device name      | Own device | Profiles | Button Bindings | Performance Settings | LEDs | Sleep
 -----------------|------------|----------|-----------------|----------------------|------|-------
-**Gladius 2**    |            | +        | ?               | ?                    | +    | N/A
+**Gladius 2**    |            | +        | ?               | +                    | +    | N/A
 **Pugio**        | +          | +        | +               | +                    | +    | N/A
 **Strix Carry**  | +          | +        | +               | +                    | N/A  | +
 **Strix Impact** |            | N/A      | ?               | ?                    | +    | N/A
