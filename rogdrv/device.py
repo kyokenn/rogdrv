@@ -591,7 +591,7 @@ class Gladius2(Device):
     """
     product_id = 0x1877
     profiles = 3
-    buttons = 10
+    buttons = 8
     buttons_mapping = {
         1: 1,
         2: 2,
