@@ -585,6 +585,26 @@ class Device(object, metaclass=DeviceMeta):
         self.set_profile(saved_profile)
 
 
+class Gladius2(Device):
+    """
+    ROG Gladius II Origin (8 buttons) - wired version, 12k DPI
+    """
+    product_id = 0x1877
+    profiles = 3
+    buttons = 8
+    buttons_mapping = {
+        1: 1,
+        2: 2,
+        3: 3,
+        4: 8,
+        5: 9,
+        6: 6,
+        7: 4,
+        8: 5,
+    }
+    leds = 3
+
+
 class Pugio(Device):
     """
     Gladius (8 buttons) based device with extra 2 buttons (10 buttons total).
