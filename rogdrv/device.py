@@ -119,9 +119,9 @@ class Device(object, metaclass=DeviceMeta):
 
                 interface = ''
                 if device.interface_number == self.keyboard_interface:
-                    interface = ' [using as keyboard]'
+                    interface += ' [using as keyboard]'
                 elif device.interface_number == self.control_interface:
-                    interface = ' [using as control]'
+                    interface += ' [using as control]'
 
                 logger.debug(
                     '{}: {} {} interface {}{}'
