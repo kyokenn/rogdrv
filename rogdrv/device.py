@@ -605,6 +605,13 @@ class Gladius2(Device):
     leds = 3
 
 
+class Gladius2Alt(Gladius2):
+    """
+    ROG Gladius II.
+    """
+    product_id = 0x1845
+
+
 class Pugio(Device):
     """
     Gladius (8 buttons) based device with extra 2 buttons (10 buttons total).
