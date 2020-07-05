@@ -15,8 +15,16 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 import json
-import hidapi
 import logging
+
+try:
+    import hid
+    HIDDevice = None
+    HID_BLOCK = False
+except ImportError:
+    import hidapi as hid
+    from hidapi import Device as HIDDevice
+    HID_BLOCK = True
 
 from evdev import uinput, ecodes
 
@@ -82,6 +90,21 @@ def get_device():
             pass
 
 
+def get_hid_property(obj, name):
+    if type(obj) == dict:  # hid module
+        return obj[name]
+    else:  # hidapi module
+        return getattr(obj, name)
+
+def open_hid_device(info):
+    if HIDDevice is None:
+        device = hid.device()
+        device.open_path(info['path'])
+        return device
+    else:
+        return HIDDevice(info)
+
+
 class Device(object, metaclass=DeviceMeta):
     vendor_id = 0x0B05
     profiles = 0
@@ -104,9 +127,12 @@ class Device(object, metaclass=DeviceMeta):
     def __init__(self):
         logger.debug('searching for device {}'.format(self.__class__.info()))
 
-        devices = tuple(hidapi.enumerate(
+        devices = tuple(hid.enumerate(
             vendor_id=self.vendor_id,
             product_id=self.product_id))
+
+        keyboard = None
+        control = None
 
         if len(devices):
             logger.debug('found {} subdevices:'.format(len(devices)))
@@ -117,35 +143,39 @@ class Device(object, metaclass=DeviceMeta):
                 # for i in x:
                 #     print(i, getattr(device, i))
 
-                interface = ''
-                if device.interface_number == self.keyboard_interface:
-                    interface += ' [using as keyboard]'
-                elif device.interface_number == self.control_interface:
-                    interface += ' [using as control]'
+                info = ''
+                if get_hid_property(device, 'interface_number') == self.keyboard_interface:
+                    info += ' [using as keyboard]'
+                    keyboard = device
+                elif get_hid_property(device, 'interface_number') == self.control_interface:
+                    info += ' [using as control]'
+                    control = device
 
                 logger.debug(
                     '{}: {} {} interface {}{}'
-                    .format(device.path.decode(), device.manufacturer_string,
-                            device.product_string, device.interface_number,
-                            interface))
+                    .format(get_hid_property(device, 'path').decode(),
+                            get_hid_property(device, 'manufacturer_string'),
+                            get_hid_property(device, 'product_string'),
+                            get_hid_property(device, 'interface_number'),
+                            info))
         else:
             logger.debug('0 devices found')
 
         if not devices:
             raise DeviceNotFound()
 
-        # keyboard subdevice
-        kbd_info = next(filter(
-            lambda x: x.interface_number == self.keyboard_interface, devices), None)
+        if control is None:
+            logger.debug('control subdevice not found')
+            raise DeviceNotFound()
+        else:
+            logger.debug('opening control subdevice')
+            self._ctl = open_hid_device(control)
 
-        # control subdevice
-        ctl_info = next(filter(
-            lambda x: x.interface_number == self.control_interface, devices), None)
-
-        logger.debug('opening keyboard subdevice')
-        self._kbd = hidapi.Device(kbd_info)
-        logger.debug('opening control subdevice')
-        self._ctl = hidapi.Device(ctl_info)
+        if keyboard is None:
+            logger.debug('keyboard subdevice not found')
+        else:
+            logger.debug('opening keyboard subdevice')
+            self._kbd = open_hid_device(keyboard)
 
     @classmethod
     def info(cls):
@@ -165,7 +195,10 @@ class Device(object, metaclass=DeviceMeta):
         :returns: pressed keys
         :rtype: set
         """
-        data = self._kbd.read(256, blocking=True)
+        if HID_BLOCK:
+            data = self._kbd.read(256, blocking=True)
+        else:
+            data = self._kbd.read(256)
 
         # TODO: implement modifiers
         mod = data[1]
@@ -192,7 +225,10 @@ class Device(object, metaclass=DeviceMeta):
         :returns: response data
         :rtype: bytes
         """
-        data = self._ctl.read(64, blocking=True)
+        if HID_BLOCK:
+            data = self._ctl.read(64, blocking=True)
+        else:
+            data = self._ctl.read(64)
         logger.debug('< ' + ' '.join('{:02X}'.format(i) for i in data))
         return data
 
