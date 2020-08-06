@@ -99,7 +99,6 @@ class EventHandler(object):
 [Desktop Entry]
 Name=ROGDRV
 GenericName=ASUS ROG userspace driver
-Comment=ASUS ROG userspace driver
 Exec=rogdrv
 Terminal=false
 Type=Application
