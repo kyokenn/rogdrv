@@ -1,6 +1,10 @@
+*.pp
+*.8
 *.egg-info
 *.pyc
+*.rpm
+*.src.rpm
 /build/
 /dist/
+/selinux/tmp/
 __pycache__
-backup.json

@@ -35,8 +35,9 @@ Requirements
 ------------
 
 * python >= 3.0
-* python-hidapi + python-cffi (hidapi-cffi)
 * python-evdev
+* [hid](https://pypi.org/project/hid/)
+* hidapi (libhidapi-hidraw0 / hidapi)
 * gir-appindicator3
 
 Ubuntu:

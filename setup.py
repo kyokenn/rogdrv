@@ -34,6 +34,9 @@ setup(
         'Programming Language :: Python :: 3',
         'Topic :: Games/Entertainment',
     ],
+    setup_requires=[
+        'hid',
+    ],
     include_package_data=True,
     zip_safe=False,
 )

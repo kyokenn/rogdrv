@@ -101,6 +101,9 @@ class Device(object, metaclass=DeviceMeta):
     control_interface = 2
 
     def __init__(self):
+        from .hid import HID_INTERFACE
+        logger.debug('using HID interface: {}'.format(HID_INTERFACE))
+
         logger.debug('searching for device {}'.format(self.__class__.info()))
 
         devices = hid.list_devices(self.vendor_id, self.product_id)
@@ -182,9 +185,14 @@ class Device(object, metaclass=DeviceMeta):
         # collect current pressed buttons
         pressed = set()
         for action in data[3:]:
-            if action in defs.ACTIONS_KEYBOARD:
-                evdev_name = defs.ACTIONS_KEYBOARD[action]
-                pressed.add(getattr(ecodes, evdev_name))
+            if action not in defs.ACTIONS_KEYBOARD:
+                continue
+
+            evdev_name = defs.ACTIONS_KEYBOARD[action]
+            if evdev_name == 'UNDEFINED':
+                continue
+
+            pressed.add(getattr(ecodes, evdev_name))
 
         return pressed
 

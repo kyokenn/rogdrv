@@ -14,36 +14,43 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-try:
-    import hid
-    HIDDevice = None
-except ImportError:
-    import hidapi as hid
-    from hidapi import Device as HIDDevice
+HID_INTERFACE = None
+HIDDevice = None
+
+
+import hid
+
+
+if hasattr(hid, 'Device'):
+    from hid import Device as HIDDevice
+    HID_INTERFACE = 'hid'
+
+else:
+    HID_INTERFACE = 'hidapi'
 
 
 def get_property(obj, name):
-    if type(obj) == dict:  # hid module
+    if HID_INTERFACE == 'hid':
         return obj[name]
-    else:  # hidapi module
-        return getattr(obj, name)
+    elif HID_INTERFACE == 'hidapi':
+        return obj[name]
 
 
 def open_device(info):
-    if HIDDevice is None:
+    if HID_INTERFACE == 'hid':
+        return HIDDevice(path=info['path'])
+    elif HID_INTERFACE == 'hidapi':
         device = hid.device()
         device.open_path(info['path'])
         return device
-    else:
-        return HIDDevice(info)
 
 
 def read_device(device, count):
-    if HIDDevice is None:
+    if HID_INTERFACE == 'hid':
         return device.read(count)
-    else:
-        return device.read(count, blocking=True)
+    elif HID_INTERFACE == 'hidapi':
+        return device.read(count)
 
 
 def list_devices(vendor_id, product_id):
-    return tuple(hid.enumerate(vendor_id=vendor_id, product_id=product_id))
+    return tuple(hid.enumerate(vendor_id, product_id))
