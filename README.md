@@ -36,13 +36,13 @@ Requirements
 
 * python >= 3.0
 * python-evdev
-* [hid](https://pypi.org/project/hid/)
+* [hid](https://pypi.org/project/hid/) (python3-hid)
 * hidapi (libhidapi-hidraw0 / hidapi)
 * gir-appindicator3
 
 Ubuntu:
 ```
-apt install python3-hidapi python3-evdev gir1.2-appindicator3-0.1
+apt install python3-hidapi python3-hid python3-evdev gir1.2-appindicator3-0.1
 ```
 
 Installation
