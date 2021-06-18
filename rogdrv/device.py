@@ -99,6 +99,7 @@ class Device(object, metaclass=DeviceMeta):
     wireless = False
     keyboard_interface = 1
     control_interface = 2
+    dpis = 2
 
     def __init__(self):
         from .hid import HID_INTERFACE
@@ -408,17 +409,21 @@ class Device(object, metaclass=DeviceMeta):
         Get current DPI, rate and cursor snapping.
         """
         logger.debug('getting DPI and polling rate')
+        logger.debug("Number of dpi presets: {}".format(self.dpis))
         request = [0] * 64
         request[0] = 0x12
         request[1] = 0x04
         response = self.query(bytes(request))
 
-        dpi1 = response[4] * 50 + 50  # DPI preset 1
-        dpi2 = response[6] * 50 + 50  # DPI preset 2
-        rate = defs.POLLING_RATES[response[8]]
-        bresponse = (response[10] + 1) * 4
-        snapping = response[12] + 1
-        return dpi1, dpi2, rate, bresponse, snapping
+        dpi = []
+        for i in range(self.dpis):
+            dpi.append(response[4 + i * 2] * 50 + 50)
+        dpi_offset = 4 + self.dpis * 2
+        logger.debug("dpi_offset = {}".format(dpi_offset))
+        rate = defs.POLLING_RATES[response[dpi_offset + 0]]
+        bresponse = (response[dpi_offset + 2] + 1) * 4
+        snapping = response[dpi_offset + 4] + 1
+        return dpi, rate, bresponse, snapping
 
     def set_dpi(self, dpi: int, preset=1):
         """
@@ -427,10 +432,10 @@ class Device(object, metaclass=DeviceMeta):
         :param dpi: DPI
         :type dpi: int
 
-        :param preset: DPI preset (1 or 2)
+        :param preset: DPI preset (Start from 1)
         :type preset: int
         """
-        if preset not in (1, 2):
+        if preset not in range(1, self.dpis + 1):
             preset = 1
 
         logger.debug('setting DPI to {} for preset {}'.format(dpi, preset))
@@ -456,7 +461,7 @@ class Device(object, metaclass=DeviceMeta):
         request = [0] * 64
         request[0] = 0x51
         request[1] = 0x31
-        request[2] = 0x02
+        request[2] = self.dpis + 0x00 # The first entry after dpi settings
         request[4] = rates.get(rate, 0)
         self.query(bytes(request))
 
@@ -474,7 +479,7 @@ class Device(object, metaclass=DeviceMeta):
         request = [0] * 64
         request[0] = 0x51
         request[1] = 0x31
-        request[2] = 0x03
+        request[2] = self.dpis + 0x01
         request[4] = rtype - 1
         self.query(bytes(request))
 
@@ -493,7 +498,7 @@ class Device(object, metaclass=DeviceMeta):
         request = [0] * 64
         request[0] = 0x51
         request[1] = 0x31
-        request[2] = 0x04
+        request[2] = self.dpis + 0x02
         request[4] = stype - 1
         self.query(bytes(request))
 
@@ -533,11 +538,11 @@ class Device(object, metaclass=DeviceMeta):
         for profile in range(1, self.profiles + 1):
             self.set_profile(profile)
 
-            dpi1, dpi2, rate, response, snapping = self.get_dpi_rate_response_snapping()
+            dpi, rate, response, snapping = self.get_dpi_rate_response_snapping()
 
             profile_data = {
                 'bindings': self.get_bindings().export(),
-                'dpi': [dpi1, dpi2],
+                'dpi': dpi,
                 'rate': rate,
                 'response': response,
                 'snapping': snapping,
@@ -571,8 +576,8 @@ class Device(object, metaclass=DeviceMeta):
                 self.set_bindings(bindings)
 
             if 'dpi' in profile_data:
-                self.set_dpi(profile_data['dpi'][0], 1)
-                self.set_dpi(profile_data['dpi'][1], 2)
+                for i in self.dpis:
+                    self.set_dpi(profile_data['dpi'][i], i + 1)
 
             if 'rate' in profile_data:
                 self.set_rate(profile_data['rate'])
