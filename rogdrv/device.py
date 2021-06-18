@@ -681,7 +681,7 @@ class StrixImpactII(Device):
     profiles = 3
     buttons = 8
     dpis = 4
-    leds = 1
+    leds = 3
 
 class StrixImpactIIWireless(StrixImpactII):
     product_id = 0x1949
