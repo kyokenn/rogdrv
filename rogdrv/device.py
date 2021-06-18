@@ -674,6 +674,18 @@ class StrixImpact(Device):
     buttons = 6
     leds = 1
 
+class StrixImpactII(Device):
+    product_id = 0x1947
+    keyboard_interface = 2
+    control_interface = 0
+    profiles = 3
+    buttons = 8
+    dpis = 4
+    leds = 1
+
+class StrixImpactIIWireless(StrixImpactII):
+    product_id = 0x1949
+    wireless = True
 
 class StrixEvolve(Device):
     product_id = 0x185B
