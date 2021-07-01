@@ -213,9 +213,9 @@ def rogdrv_config():
                 device.set_dpi(int(args[2]), preset=preset)
                 device.save()
 
-            dpi1, dpi2, rate, response, snapping = device.get_dpi_rate_response_snapping()
-            print('DPI Preset 1: {}'.format(dpi1))
-            print('DPI Preset 2: {}'.format(dpi2))
+            dpi, rate, response, snapping = device.get_dpi_rate_response_snapping()
+            for idx, d in enumerate(dpi, start=1):
+                print('DPI Preset {}: {}'.format(idx, d))
             return
 
         elif args[1] == 'rate':
@@ -228,7 +228,7 @@ def rogdrv_config():
                 device.set_rate(int(args[2]))
                 device.save()
 
-            dpi1, dpi2, rate, response, snapping = device.get_dpi_rate_response_snapping()
+            dpi, rate, response, snapping = device.get_dpi_rate_response_snapping()
             print('Polling rate: {} Hz'.format(rate))
             return
 
@@ -242,7 +242,7 @@ def rogdrv_config():
                 device.set_response(int(args[2]))
                 device.save()
 
-            dpi1, dpi2, rate, response, snapping = device.get_dpi_rate_response_snapping()
+            dpi, rate, response, snapping = device.get_dpi_rate_response_snapping()
             print('Button response: {} ms'.format(response))
             return
 
@@ -256,7 +256,7 @@ def rogdrv_config():
                 device.set_snapping(int(args[2]))
                 device.save()
 
-            dpi1, dpi2, rate, response, snapping = device.get_dpi_rate_response_snapping()
+            dpi, rate, response, snapping = device.get_dpi_rate_response_snapping()
             print('Snapping angle: type {}'.format(snapping))
             return
 
