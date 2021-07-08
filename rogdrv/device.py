@@ -674,6 +674,7 @@ class StrixImpact(Device):
     buttons = 6
     leds = 1
 
+
 class StrixImpactII(Device):
     product_id = 0x1947
     keyboard_interface = 2
@@ -683,9 +684,11 @@ class StrixImpactII(Device):
     dpis = 4
     leds = 3
 
+
 class StrixImpactIIWireless(StrixImpactII):
     product_id = 0x1949
     wireless = True
+
 
 class StrixEvolve(Device):
     product_id = 0x185B
@@ -704,7 +707,6 @@ class Spatha(Device):
     buttons = 10
     # buttons = 14  # unsupported
     leds = 3
-    wireless = True
 
 
 class SpathaWireless(Spatha):
@@ -712,6 +714,7 @@ class SpathaWireless(Spatha):
     Spatha in wireless mode.
     """
     product_id = 0x1824
+    wireless = True
 
 
 class Buzzard(Device):
