@@ -603,9 +603,9 @@ class Device(object, metaclass=DeviceMeta):
 
 class Gladius2(Device):
     """
-    ROG Gladius II Origin (8 buttons) - wired version, 12k DPI
+    ROG Gladius II.
     """
-    product_id = 0x1877
+    product_id = 0x1845
     profiles = 3
     buttons = 8
     buttons_mapping = {
@@ -621,11 +621,11 @@ class Gladius2(Device):
     leds = 3
 
 
-class Gladius2Alt(Gladius2):
+class Gladius2Origin(Gladius2):
     """
-    ROG Gladius II.
+    ROG Gladius II Origin (8 buttons) - wired version, 12k DPI.
     """
-    product_id = 0x1845
+    product_id = 0x1877
 
 
 class Pugio(Device):
