@@ -11,17 +11,18 @@ The protocol was reverse-engineered, so everything is experimental. Use at your 
 Supported devices and features
 ------------------------------
 
-Device name      | Own device | Profiles | Button Bindings | Performance Settings | LEDs | Sleep
------------------|------------|----------|-----------------|----------------------|------|-------
-**Gladius 2**    |            | +        | +               | +                    | +    | N/A
-**Pugio**        | +          | +        | +               | +                    | +    | N/A
-**Strix Carry**  | +          | +        | +               | +                    | N/A  | +
-**Strix Impact** |            | N/A      | ?               | ?                    | +    | N/A
-**Strix Evolve** |            | ?        | ?               | ?                    | ?    | N/A
-**Buzzard**      |            | +        | ?               | ?                    | ?    | N/A
-**Spatha**       |            | +        | ?               | ?                    | ?    | ?
+Device name                  | Profiles | Button Bindings | Performance Settings | LEDs | Sleep
+-----------------------------|----------|-----------------|----------------------|------|-------
+**Gladius 2**                | +        | +               | +                    | +    | N/A
+**Pugio**                    | +        | +               | +                    | +    | N/A
+**Strix Carry**              | +        | +               | +                    | N/A  | +
+**Keris Wireless**           | +        | +               | +                    | +    | +
+**Strix Impact**             | N/A      | ?               | ?                    | +    | N/A
+**Strix Impact II Wireless** | +        | +               | +                    | +    | ?
+**Strix Evolve**             | ?        | ?               | ?                    | ?    | N/A
+**Buzzard**                  | +        | ?               | ?                    | ?    | N/A
+**Spatha**                   | +        | ?               | ?                    | ?    | ?
 
-* **Own device** - I own this device, which means I can reverse engeneer, implement and test all the features
 * **Profiles** - Profile switching feature
 * **Button Bindings** - Buttons binding feature
 * **Performance Settings** - DPI, polling rate, buttons response, angle snapping configuration feature
