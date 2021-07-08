@@ -317,7 +317,7 @@ class Device(object, metaclass=DeviceMeta):
         request[1] = 0x03
         response = self.query(bytes(request))
 
-        colors = Colors()
+        colors = Colors(self.leds)
         colors.load(response)
         return colors
 
@@ -589,7 +589,7 @@ class Device(object, metaclass=DeviceMeta):
                 self.set_snapping(profile_data['snapping'])
 
             if 'colors' in profile_data:
-                colors = Colors()
+                colors = Colors(self.leds)
                 colors.load(profile_data['colors'])
                 self.set_colors(colors)
 
@@ -721,3 +721,33 @@ class Buzzard(Device):
     product_id = 0x1816
     profiles = 3
     buttons = 10
+
+
+class KerisWireless(Device):
+    """
+    Keris Wireless in wireless mode.
+    """
+    product_id = 0x1960
+    profiles = 3
+    buttons = 8
+    leds = 2
+    keyboard_interface = 2
+    control_interface = 0
+    wireless = True
+    dpis = 4
+
+
+class KerisWirelessWired(KerisWireless):
+    """
+    Keris Wireless in wired mode.
+    """
+    product_id = 0x195E
+
+    def get_sleep(self):
+        # logger.debug('getting sleep timeout')
+        request = [0] * 64
+        request[0] = 0x12
+        request[1] = 0x07
+        response = self.query(bytes(request))
+
+        return defs.SLEEP_TIME[response[5]]
