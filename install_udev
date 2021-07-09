@@ -2,6 +2,8 @@
 
 from rog.device import DeviceMeta
 
+UDEV_RULES = '/etc/udev/rules.d/50-rogdrv.rules'
+
 
 def main():
     rules = ['KERNEL=="uinput", MODE="0666"']
@@ -22,9 +24,11 @@ def main():
             'MODE="0666"',
         )))
 
-    with open('/etc/udev/rules.d/50-rogdrv.rules', 'w') as f:
+    with open(UDEV_RULES, 'w') as f:
         for rule in rules:
             f.write(rule + '\n')
+
+    print('udev rules are saved into "{}"'.format(UDEV_RULES))
 
 
 if __name__ == '__main__':
