@@ -6,7 +6,7 @@ readme = open('README.md').read()
 
 setup(
     name='rogdrv',
-    version='0.0.6',
+    version='0.0.7',
     description='ASUS ROG Mouse Driver',
     url='https://github.com/kyokenn/rogdrv',
     author='Kyoken',
@@ -15,16 +15,16 @@ setup(
     long_description=readme,
     entry_points={
         'console_scripts': [
-            'rogdrv=rogdrv.__main__:rogdrv',
-            'rogdrv-config=rogdrv.__main__:rogdrv_config',
+            'rogdrv=rog.__main__:rogdrv',
+            'rogdrv-config=rog.__main__:rogdrv_config',
         ]
     },
     packages=[
-        'rogdrv',
+        'rog',
     ],
     data_files=[
         ['share/applications', ['rogdrv.desktop']],
-        ['share/pixmaps', ['rogdrv/rog.png']],
+        ['share/pixmaps', ['rog/rog.png']],
         ['etc/udev', ['udev/50-rogdrv.rules']],
     ],
     classifiers=[
