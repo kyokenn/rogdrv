@@ -64,13 +64,9 @@ You need r/w permissions for /dev/hidrawX file of your mouse.
 You can solve this by installing a custom udev rules:
 
 ```
-sudo cp -f udev/50-rogdrv.rules /etc/udev/rules.d/
+sudo ./install_udev
 sudo udevadm control --reload-rules
 sudo udevadm trigger
-```
-or
-```
-./install_udev.sh
 ```
 
 Using
