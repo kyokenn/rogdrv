@@ -736,13 +736,6 @@ class KerisWireless(Device):
     wireless = True
     dpis = 4
 
-
-class KerisWirelessWired(KerisWireless):
-    """
-    Keris Wireless in wired mode.
-    """
-    product_id = 0x195E
-
     def get_sleep(self):
         # logger.debug('getting sleep timeout')
         request = [0] * 64
@@ -751,3 +744,10 @@ class KerisWirelessWired(KerisWireless):
         response = self.query(bytes(request))
 
         return defs.SLEEP_TIME[response[5]]
+
+
+class KerisWirelessWired(KerisWireless):
+    """
+    Keris Wireless in wired mode.
+    """
+    product_id = 0x195E
