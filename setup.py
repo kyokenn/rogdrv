@@ -25,7 +25,6 @@ setup(
     data_files=[
         ['share/applications', ['rogdrv.desktop']],
         ['share/pixmaps', ['rog/rog.png']],
-        ['etc/udev', ['udev/50-rogdrv.rules']],
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
