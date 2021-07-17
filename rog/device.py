@@ -627,6 +627,11 @@ class Gladius2Origin(Gladius2):
     """
     product_id = 0x1877
 
+class Gladius2OriginPink(Gladius2):
+    """
+    ROG Gladius II Origin PNK LTD (8 buttons) - wired version, 12k DPI.
+    """
+    product_id = 0x18CD
 
 class Pugio(Device):
     """
