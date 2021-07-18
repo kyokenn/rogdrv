@@ -19,11 +19,9 @@ import logging
 
 from evdev import uinput, ecodes
 
-from . import defs, hid
+from . import defs, hid, logger
 from .bindings import Bindings, get_action_type
 from .colors import Colors
-
-logger = logging.getLogger('rogdrv')
 
 
 class EventHandler(object):
@@ -102,9 +100,6 @@ class Device(object, metaclass=DeviceMeta):
     dpis = 2
 
     def __init__(self):
-        from .hid import HID_INTERFACE
-        logger.debug('using HID interface: {}'.format(HID_INTERFACE))
-
         logger.debug('searching for device {}'.format(self.__class__.info()))
 
         devices = hid.list_devices(self.vendor_id, self.product_id)
@@ -415,15 +410,22 @@ class Device(object, metaclass=DeviceMeta):
         request[1] = 0x04
         response = self.query(bytes(request))
 
-        dpi = []
-        for i in range(self.dpis):
-            dpi.append(response[4 + i * 2] * 50 + 50)
-        dpi_offset = 4 + self.dpis * 2
-        logger.debug("dpi_offset = {}".format(dpi_offset))
-        rate = defs.POLLING_RATES[response[dpi_offset + 0]]
-        bresponse = (response[dpi_offset + 2] + 1) * 4
-        snapping = response[dpi_offset + 4] + 1
-        return dpi, rate, bresponse, snapping
+        i = 4
+        dpis = []
+        for _ in range(self.dpis):
+            dpis.append(response[i] * 50 + 50)
+            i += 2
+
+        rate = defs.POLLING_RATES[response[i]]
+        i += 2
+
+        bresponse = (response[i] + 1) * 4
+        i += 2
+
+        snapping = response[i] + 1
+        i += 2
+
+        return dpis, rate, bresponse, snapping
 
     def set_dpi(self, dpi: int, preset=1):
         """
@@ -607,7 +609,7 @@ class Gladius2(Device):
     """
     product_id = 0x1845
     profiles = 3
-    buttons = 8
+    buttons = 8  # could be 9 buttons? does the "DPI Target Button" counts?
     buttons_mapping = {
         1: 1,
         2: 2,
@@ -624,8 +626,24 @@ class Gladius2(Device):
 class Gladius2Origin(Gladius2):
     """
     ROG Gladius II Origin (8 buttons) - wired version, 12k DPI.
+    Gladius II without DPI Dedicated Target Button.
     """
     product_id = 0x1877
+    buttons = 8
+
+    def get_dpi_rate_response_snapping(self):
+        dpis, rate, bresponse, snapping = super().get_dpi_rate_response_snapping()
+        return ([dpi * 2 for dpi in dpis], rate, bresponse, snapping)
+
+    def set_dpi(self, dpi: int, preset=1):
+        super().set_dpi(dpi / 2, preset=preset)
+
+
+class Gladius2OriginPink(Gladius2Origin):
+    """
+    ROG Gladius II Origin PNK LTD (8 buttons) - wired version, 12k DPI.
+    """
+    product_id = 0x18CD
 
 
 class Pugio(Device):
