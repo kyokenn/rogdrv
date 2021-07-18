@@ -67,19 +67,21 @@ class HIDAPISubDevice(SubDevice):
 
 def list_devices(vendor_id, product_id):
     try:
-        import hid
+        import hidapi
+        logger.debug('getting list of devices using HIDAPI')
         subdevices = []
-        for info in hid.enumerate(vendor_id, product_id):
-            subdevices.append(HIDSubDevice(info))
+        for info in hidapi.enumerate(vendor_id, product_id):
+            subdevices.append(HIDAPISubDevice(info))
         return subdevices
     except ImportError as e:
         pass
 
     try:
-        import hidapi as hid
+        import hid
+        logger.debug('getting list of devices using HID')
         subdevices = []
         for info in hid.enumerate(vendor_id, product_id):
-            subdevices.append(HIDAPISubDevice(info))
+            subdevices.append(HIDSubDevice(info))
         return subdevices
     except ImportError as e:
         pass
