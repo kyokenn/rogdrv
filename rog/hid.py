@@ -14,43 +14,74 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-HID_INTERFACE = None
-HIDDevice = None
+
+from . import logger
 
 
-import hid
+class SubDevice(object):
+    def __init__(self, info):
+        self._info = info
+        self._device = None
+
+    def __getitem__(self, name):
+        raise NotImplementedError()
+
+    def read(self, count):
+        return self._device.read(count)
+
+    def write(self, data):
+        self._device.write(data)
+
+    def open(self):
+        raise NotImplementedError()
+
+    def close(self):
+        self._device.close()
+        self._device = None
 
 
-if hasattr(hid, 'Device'):
-    from hid import Device as HIDDevice
-    HID_INTERFACE = 'hid'
+class HIDSubDevice(SubDevice):
+    """
+    python-hid API.
+    """
+    def open(self):
+        import hid
+        self._device = hid.device()
+        self._device.open_path(self['path'])
 
-else:
-    HID_INTERFACE = 'hidapi'
-
-
-def get_property(obj, name):
-    if HID_INTERFACE == 'hid':
-        return obj[name]
-    elif HID_INTERFACE == 'hidapi':
-        return obj[name]
+    def __getitem__(self, name):
+        return self._info[name]
 
 
-def open_device(info):
-    if HID_INTERFACE == 'hid':
-        return HIDDevice(path=info['path'])
-    elif HID_INTERFACE == 'hidapi':
-        device = hid.device()
-        device.open_path(info['path'])
-        return device
+class HIDAPISubDevice(SubDevice):
+    """
+    python-hidapi API.
+    """
+    def open(self):
+        import hidapi
+        self._device = hidapi.Device(path=self['path'])
 
-
-def read_device(device, count):
-    if HID_INTERFACE == 'hid':
-        return device.read(count)
-    elif HID_INTERFACE == 'hidapi':
-        return device.read(count)
+    def __getitem__(self, name):
+        return getattr(self._info, name)
 
 
 def list_devices(vendor_id, product_id):
-    return tuple(hid.enumerate(vendor_id, product_id))
+    try:
+        import hid
+        subdevices = []
+        for info in hid.enumerate(vendor_id, product_id):
+            subdevices.append(HIDSubDevice(info))
+        return subdevices
+    except ImportError as e:
+        pass
+
+    try:
+        import hidapi as hid
+        subdevices = []
+        for info in hid.enumerate(vendor_id, product_id):
+            subdevices.append(HIDAPISubDevice(info))
+        return subdevices
+    except ImportError as e:
+        pass
+
+    return []

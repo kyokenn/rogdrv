@@ -102,52 +102,49 @@ class Device(object, metaclass=DeviceMeta):
     def __init__(self):
         logger.debug('searching for device {}'.format(self.__class__.info()))
 
-        devices = hid.list_devices(self.vendor_id, self.product_id)
-        keyboard = None
-        control = None
+        subdevices = hid.list_devices(self.vendor_id, self.product_id)
+        self._kbd = None
+        self._ctl = None
 
-        if len(devices):
-            logger.debug('found {} subdevices:'.format(len(devices)))
-            for device in devices:
+        if len(subdevices):
+            logger.debug('found {} subdevices:'.format(len(subdevices)))
+            for subdevice in subdevices:
                 # print(device)
                 # print(dir(device))
-                # x = 'interface_number', 'manufacturer_string', 'path', 'product_id', 'product_string', 'release_number', 'serial_number', 'usage', 'usage_page', 'vendor_id'
-                # for i in x:
-                #     print(i, getattr(device, i))
 
                 info = ''
-                if hid.get_property(device, 'interface_number') == self.keyboard_interface:
+                if subdevice['interface_number'] == self.keyboard_interface:
                     info += ' [using as keyboard]'
-                    keyboard = device
-                elif hid.get_property(device, 'interface_number') == self.control_interface:
+                    self._kbd = subdevice
+                elif subdevice['interface_number'] == self.control_interface:
                     info += ' [using as control]'
-                    control = device
+                    self._ctl = subdevice
 
                 logger.debug(
                     '{}: {} {} interface {}{}'
-                    .format(hid.get_property(device, 'path').decode(),
-                            hid.get_property(device, 'manufacturer_string'),
-                            hid.get_property(device, 'product_string'),
-                            hid.get_property(device, 'interface_number'),
+                    .format(subdevice['path'].decode(),
+                            subdevice['manufacturer_string'],
+                            subdevice['product_string'],
+                            subdevice['interface_number'],
                             info))
         else:
             logger.debug('0 devices found')
 
-        if not devices:
+        if not subdevices:
             raise DeviceNotFound()
 
-        if control is None:
+        if self._ctl is None:
             logger.debug('control subdevice not found')
             raise DeviceNotFound()
         else:
             logger.debug('opening control subdevice')
-            self._ctl = hid.open_device(control)
+            self._ctl.open()
 
-        if keyboard is None:
+        if self._kbd is None:
             logger.debug('keyboard subdevice not found')
         else:
             logger.debug('opening keyboard subdevice')
-            self._kbd = hid.open_device(keyboard)
+            self._kbd.open()
 
     @classmethod
     def info(cls):
@@ -167,7 +164,7 @@ class Device(object, metaclass=DeviceMeta):
         :returns: pressed keys
         :rtype: set
         """
-        data = hid.read_device(self._kbd, 256)
+        data = self._kbd.read(256)
 
         # TODO: implement modifiers
         mod = data[1]
@@ -199,7 +196,7 @@ class Device(object, metaclass=DeviceMeta):
         :returns: response data
         :rtype: bytes
         """
-        data = hid.read_device(self._ctl, 64)
+        data = self._ctl.read(64)
         logger.debug('< ' + ' '.join('{:02X}'.format(i) for i in data))
         return data
 
