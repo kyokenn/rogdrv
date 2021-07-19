@@ -6,7 +6,7 @@ readme = open('README.md').read()
 
 setup(
     name='rogdrv',
-    version='0.0.7',
+    version='0.1.0',
     description='ASUS ROG Mouse Driver',
     url='https://github.com/kyokenn/rogdrv',
     author='Kyoken',

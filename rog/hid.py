@@ -40,9 +40,10 @@ class SubDevice(object):
         self._device = None
 
 
-class HIDSubDevice(SubDevice):
+class CythonSubDevice(SubDevice):
     """
-    python-hid API.
+    python3-hid (ubuntu) / cython-hidapi
+    https://github.com/trezor/cython-hidapi
     """
     def open(self):
         import hid
@@ -53,9 +54,10 @@ class HIDSubDevice(SubDevice):
         return self._info[name]
 
 
-class HIDAPISubDevice(SubDevice):
+class CFFISubDevice(SubDevice):
     """
-    python-hidapi API.
+    python3-hidapi (ubuntu) / hidapi-cffi
+    https://github.com/jbaiter/hidapi-cffi
     """
     def open(self):
         import hidapi
@@ -68,20 +70,20 @@ class HIDAPISubDevice(SubDevice):
 def list_devices(vendor_id, product_id):
     try:
         import hidapi
-        logger.debug('getting list of devices using HIDAPI')
+        logger.debug('getting list of devices using "hidapi-cffi"')
         subdevices = []
         for info in hidapi.enumerate(vendor_id, product_id):
-            subdevices.append(HIDAPISubDevice(info))
+            subdevices.append(CFFISubDevice(info))
         return subdevices
     except ImportError as e:
         pass
 
     try:
         import hid
-        logger.debug('getting list of devices using HID')
+        logger.debug('getting list of devices using "cython-hidapi"')
         subdevices = []
         for info in hid.enumerate(vendor_id, product_id):
-            subdevices.append(HIDSubDevice(info))
+            subdevices.append(CythonSubDevice(info))
         return subdevices
     except ImportError as e:
         pass
