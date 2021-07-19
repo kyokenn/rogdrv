@@ -42,7 +42,7 @@ class SubDevice(object):
 
 class CythonSubDevice(SubDevice):
     """
-    python3-hid (ubuntu) / cython-hidapi
+    python3-hid (Ubuntu) / cython-hidapi
     https://github.com/trezor/cython-hidapi
     """
     def open(self):
@@ -56,7 +56,7 @@ class CythonSubDevice(SubDevice):
 
 class CFFISubDevice(SubDevice):
     """
-    python3-hidapi (ubuntu) / hidapi-cffi
+    python3-hidapi (Ubuntu) / hidapi-cffi
     https://github.com/jbaiter/hidapi-cffi
     """
     def open(self):
@@ -67,24 +67,50 @@ class CFFISubDevice(SubDevice):
         return getattr(self._info, name)
 
 
+class PyHIDAPISubDevice(SubDevice):
+    """
+    hid (PyPi) / pyhidapi
+    https://github.com/apmorton/pyhidapi
+    """
+    def open(self):
+        import hid
+        self._device = hid.Device(path=self['path'])
+
+    def __getitem__(self, name):
+        return self._info[name]
+
+
 def list_devices(vendor_id, product_id):
     try:
         import hidapi
+
         logger.debug('getting list of devices using "hidapi-cffi"')
         subdevices = []
         for info in hidapi.enumerate(vendor_id, product_id):
             subdevices.append(CFFISubDevice(info))
         return subdevices
+
     except ImportError as e:
         pass
 
     try:
         import hid
-        logger.debug('getting list of devices using "cython-hidapi"')
+
         subdevices = []
-        for info in hid.enumerate(vendor_id, product_id):
-            subdevices.append(CythonSubDevice(info))
+
+        if hasattr(hid, 'Device'):
+            logger.debug('getting list of devices using "pyhidapi"')
+            for info in hid.enumerate(vendor_id, product_id):
+                subdevices.append(PyHIDAPISubDevice(info))
+
+        else:
+            logger.debug('getting list of devices using "cython-hidapi"')
+            for info in hid.enumerate(vendor_id, product_id):
+                print(info.items())
+                subdevices.append(CythonSubDevice(info))
+
         return subdevices
+
     except ImportError as e:
         pass
 

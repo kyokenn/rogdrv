@@ -34,7 +34,7 @@ setup(
         'Topic :: Games/Entertainment',
     ],
     setup_requires=[
-        'hid',
+        # 'hid',
     ],
     include_package_data=True,
     zip_safe=False,

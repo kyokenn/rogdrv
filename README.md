@@ -35,15 +35,23 @@ from ASUS ROG (Republic of Gamers) series.
 Requirements
 ------------
 
+**Common requirements**
+
 * python >= 3.0
 * python-evdev
-* [hid](https://pypi.org/project/hid/) (python3-hid)
-* hidapi (libhidapi-hidraw0 / hidapi)
 * gir-appindicator3
+
+**HID requirements**
+
+Only single one of it is required
+
+* [python3-hid](https://github.com/trezor/cython-hidapi)
+* [python3-hidapi](https://github.com/jbaiter/hidapi-cffi)
+* [hid](https://github.com/apmorton/pyhidapi) from PyPi (could fail to find devices, not recommended!)
 
 Ubuntu:
 ```
-apt install python3-hidapi python3-hid python3-evdev gir1.2-appindicator3-0.1
+apt install python3-hidapi python3-evdev gir1.2-appindicator3-0.1
 ```
 
 Installation
