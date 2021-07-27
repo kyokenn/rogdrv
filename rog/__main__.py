@@ -189,13 +189,14 @@ def rogdrv_config():
                 return
 
             if len(args) >= 3:
-                device.set_sleep(int(args[2]))
+                l = 0
+                if len(args) >= 4:
+                    l = args[3]
+                device.set_sleep_alert(int(args[2]), l=l)
 
-            t = device.get_sleep()
-            if t:
-                print('Sleep: {} min.'.format(t))
-            else:
-                print('Sleep: disabled')
+            t, l = device.get_sleep_alert()
+            print('Sleep: {}'.format('{} min.'.format(t) if t else 'disabled'))
+            print('Alert: {}'.format('{}%'.format(l) if l else 'disabled'))
             return
 
         elif args[1] == 'dpi':

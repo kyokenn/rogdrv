@@ -501,33 +501,41 @@ class Device(object, metaclass=DeviceMeta):
         request[4] = stype - 1
         self.query(bytes(request))
 
-    def get_sleep(self):
+    def get_sleep_alert(self):
         """
-        Get current sleep timeout.
+        Get current sleep timeout and battery alert level.
+
+        :returns: sleep timeout in minutes, battery alert level in %
+        :rtype: tuple
         """
-        logger.debug('getting sleep timeout')
+        logger.debug('getting sleep timeout and battery alert level')
         request = [0] * 64
         request[0] = 0x12
         request[1] = 0x07
         response = self.query(bytes(request))
 
-        return defs.SLEEP_TIME[response[4]]
+        # alert level is untested
+        defs.SLEEP_TIME[response[4]], response[6] * 25
 
-    def set_sleep(self, t=0):
+    def set_sleep_alert(self, t=0, l=0):
         """
-        Set sleep timeout in minutes.
+        Set sleep timeout in minutes and battery alert level.
 
         :param t: time in minutes: 0 (don't sleep), 1, 2, 3, 5, 10
         :type t: int
+
+        :param l: battery level: 0% (disabled), 25%, 50%
+        :type l: int
         """
         times = {v: k for k, v in defs.SLEEP_TIME.items()}
 
-        logger.debug('setting sleep timeout to {}'.format(t))
+        logger.debug('setting sleep timeout to {} and alert level to {}'.format(t, l))
 
         request = [0] * 64
         request[0] = 0x51
         request[1] = 0x37
         request[4] = times.get(t, times[0])
+        request[6] = l // 25
         self.query(bytes(request))
 
     def dump(self, f=None):
@@ -551,7 +559,7 @@ class Device(object, metaclass=DeviceMeta):
                 profile_data['colors'] = self.get_colors().export()
 
             if self.wireless:
-                profile_data['sleep'] = self.get_sleep()
+                profile_data['sleep'], profile_data['alert'] = self.get_sleep_alert()
 
             data[str(profile)] = profile_data
 
@@ -751,14 +759,14 @@ class KerisWireless(Device):
     wireless = True
     dpis = 4
 
-    def get_sleep(self):
-        # logger.debug('getting sleep timeout')
+    def get_sleep_alert(self):
+        logger.debug('getting sleep timeout')
         request = [0] * 64
         request[0] = 0x12
         request[1] = 0x07
         response = self.query(bytes(request))
 
-        return defs.SLEEP_TIME[response[5]]
+        return defs.SLEEP_TIME[response[5]], response[6] * 25
 
 
 class KerisWirelessWired(KerisWireless):
