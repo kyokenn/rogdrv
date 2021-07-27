@@ -130,6 +130,7 @@ LED_MODES = {
     'wave': 3,
     'reactive': 4,
     'flasher': 5,
+    'battery': 6,
 }
 
 POLLING_RATES = {
