@@ -258,7 +258,7 @@ def rogdrv_config():
                 device.save()
 
             dpi, rate, response, snapping = device.get_dpi_rate_response_snapping()
-            print('Snapping angle: type {}'.format(snapping))
+            print('Angle snapping: {}'.format('enabled' if snapping else 'disabled'))
             return
 
         elif args[1] == 'dump':
@@ -313,8 +313,8 @@ def rogdrv_config():
   rogdrv-config response [ms]                     - get/set buttons response
     ms: response in ms (4, 8, 12, 16, 20, 24, 28, 32)
 
-  rogdrv-config snapping [type]                   - get/set angle snapping type
-    type: angle snapping type (1 or 2)
+  rogdrv-config snapping [value]                  - enable/disable angle snapping
+    value: 0 - disable, 1 - enable
 
   rogdrv-config color [name r g b [mode] [brght]] - get/set LED colors
     name: logo, wheel, bottom, all
@@ -324,8 +324,9 @@ def rogdrv_config():
     mode: default, breath, rainbow, wave, reactive, flasher
     brght: brightness 0-4 (default-4)
 
-  rogdrv-config sleep [value]                     - get/set sleep timeout
-    value: timeout in minutes (0-disabled, 1, 2, 3, 5, 10)
+  rogdrv-config sleep [timeout [alert]]           - get/set sleep timeout
+    timeout: timeout in minutes (0 - disabled, 1, 2, 3, 5, 10)
+    alert: batterly alert level in % (0% - disabled, 25%, 50%)
 
   rogdrv-config dump [file]                       - save settings into file
     file: path to json file

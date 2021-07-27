@@ -419,7 +419,7 @@ class Device(object, metaclass=DeviceMeta):
         bresponse = (response[i] + 1) * 4
         i += 2
 
-        snapping = response[i] + 1
+        snapping = bool(response[i])
         i += 2
 
         return dpis, rate, bresponse, snapping
@@ -482,23 +482,20 @@ class Device(object, metaclass=DeviceMeta):
         request[4] = rtype - 1
         self.query(bytes(request))
 
-    def set_snapping(self, stype: int):
+    def set_snapping(self, enabled: bool):
         """
-        Set angle snapping type.
+        Enable/disable angle snapping.
 
-        :param stype: snapping type (1 or 2)
-        :type stype: int
+        :param enabled: is enabled?
+        :type enabled: bool
         """
-        if stype not in (1, 2):
-            stype = 1
-
-        logger.debug('setting angle snapping type to {}'.format(stype))
+        logger.debug('{} angle snapping'.format('enabling' if enabled else 'disabling'))
 
         request = [0] * 64
         request[0] = 0x51
         request[1] = 0x31
         request[2] = self.dpis + 0x02
-        request[4] = stype - 1
+        request[4] = 1 if enabled else 0
         self.query(bytes(request))
 
     def get_sleep_alert(self):
