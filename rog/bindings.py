@@ -111,27 +111,18 @@ class Bindings(object):
         for btn, (act, tp) in self._actions.items():
             yield btn, act, tp
 
-#     def __str__(self):
-#         return '''1 (LEFT):\t[{action_type_1}] {action_name_1} (0x{action_code_1:02X})
-# 2 (RIGHT):\t[{action_type_2}] {action_name_2} (0x{action_code_2:02X})
-# 3 (MIDDLE):\t[{action_type_3}] {action_name_3} (0x{action_code_3:02X})
-# 4 (SCR.UP):\t[{action_type_4}] {action_name_4} (0x{action_code_4:02X})
-# 5 (SCR.DOWN):\t[{action_type_5}] {action_name_5} (0x{action_code_5:02X})
-# 6 (DPI):\t[{action_type_6}] {action_name_6} (0x{action_code_6:02X})
-# 7 (L.BACKWARD):\t[{action_type_7}] {action_name_7} (0x{action_code_7:02X})
-# 8 (L.FORWARD):\t[{action_type_8}] {action_name_8} (0x{action_code_8:02X})
-# 9 (R.BACKWARD):\t[{action_type_9}] {action_name_9} (0x{action_code_9:02X})
-# 10 (R.FORWARD):\t[{action_type_10}] {action_name_10} (0x{action_code_10:02X})
-# '''.format(**self.export())
-
     def __str__(self):
         lines = [
-            'BTN | TYPE  | CODE - ACTION',
-            '----|-------|--------------'
+            ' BUTTON               | TYPE  | CODE - ACTION',
+            '----------------------|-------|--------------'
         ]
 
         for btn, item in self.export().items():
-            lines.append('{:02d}  | {} | 0x{:02X} - {}'.format(
-                int(btn), item['type'], item['code'], item['name']))
+            code = defs.BUTTON_SLOTS.get(int(btn), None)
+
+            lines.append('{} {} | {} | 0x{:02X} - {}'.format(
+                str(btn).rjust(2),
+                defs.ACTIONS_MOUSE.get(code, 'MOUSE_EXTRA').ljust(18),
+                item['type'], item['code'], item['name']))
 
         return '\n'.join(lines)
