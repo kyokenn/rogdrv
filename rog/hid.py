@@ -27,6 +27,8 @@ class SubDevice(object):
         raise NotImplementedError()
 
     def read(self, count):
+        if not self._device:
+            raise IOError('Device is closed')
         return self._device.read(count)
 
     def write(self, data):
@@ -106,7 +108,6 @@ def list_devices(vendor_id, product_id):
         else:
             logger.debug('getting list of devices using "cython-hidapi"')
             for info in hid.enumerate(vendor_id, product_id):
-                print(info.items())
                 subdevices.append(CythonSubDevice(info))
 
         return subdevices
