@@ -788,6 +788,7 @@ class StrixImpact(Device):
     product_id = 0x1847
     buttons = 6
     leds = 1
+    profiles = 0
 
 
 class StrixImpactII(Device):

@@ -2,7 +2,8 @@ rogdrv
 ======
 
 rogdrv is a simple ASUS ROG (Republic of Gamers) userspace mouse driver for Linux.
-The mouse device consists of 2 input devices: mouse and keyboard.
+The mouse is a composite device which consists of 2 devices: mouse, keyboard and consumer control
+for changing mouse settings.
 The keyboard part is unsupported on Linux, but it's recognised as HID device.
 So this driver maps HID events to the generic keyboard events.
 
@@ -11,17 +12,19 @@ The protocol was reverse-engineered, so everything is experimental. Use at your 
 Supported devices and features
 ------------------------------
 
-Device name                  | Profiles | Button Bindings | Performance Settings | LEDs | Sleep
------------------------------|----------|-----------------|----------------------|------|-------
-**Gladius 2**                | +        | +               | +                    | +    | N/A
-**Pugio**                    | +        | +               | +                    | +    | N/A
-**Strix Carry**              | +        | +               | +                    | N/A  | +
-**Keris Wireless**           | +        | +               | +                    | +    | +
-**Strix Impact**             | N/A      | ?               | ?                    | +    | N/A
-**Strix Impact II Wireless** | +        | +               | +                    | +    | ?
-**Strix Evolve**             | ?        | ?               | ?                    | ?    | N/A
-**Buzzard**                  | +        | ?               | ?                    | ?    | N/A
-**Spatha**                   | +        | ?               | ?                    | ?    | ?
+Device name                   | Profiles | Button Bindings | Performance Settings | LEDs | Sleep
+------------------------------|----------|-----------------|----------------------|------|-------
+**Gladius II**                | +        | +               | +                    | +    | N/A
+**Gladius II Origin**         | +        | +               | +                    | +    | N/A
+**Gladius II Origin PNK LTD** | +        | +               | +                    | +    | N/A
+**Pugio**                     | +        | +               | +                    | +    | N/A
+**Strix Carry**               | +        | +               | +                    | N/A  | +
+**Keris Wireless**            | +        | +               | +                    | +    | +
+**Strix Impact**              | N/A      | ?               | ?                    | +    | N/A
+**Strix Impact II Wireless**  | +        | +               | +                    | +    | ?
+**Strix Evolve**              | ?        | ?               | ?                    | ?    | N/A
+**Buzzard**                   | +        | ?               | ?                    | ?    | N/A
+**Spatha**                    | +        | ?               | ?                    | ?    | ?
 
 * **Profiles** - Profile switching feature
 * **Button Bindings** - Buttons binding feature
@@ -47,7 +50,7 @@ Only single one of it is required
 
 * [python3-hid](https://github.com/trezor/cython-hidapi)
 * [python3-hidapi](https://github.com/jbaiter/hidapi-cffi)
-* [hid](https://github.com/apmorton/pyhidapi) from PyPi (could fail to find devices, not recommended!)
+* [hid](https://github.com/apmorton/pyhidapi) from PyPi (could fail to find devices, **not recommended!**)
 
 Ubuntu:
 ```
@@ -82,56 +85,32 @@ Using
 
 Userspace driver consists of 2 programs: **rogdrv** and **rogdrv-config**
 
-rogdrv is a virtual uinput device driver which converts mouse events into uinput events.
+**rogdrv** is a virtual uinput device driver which converts mouse events into uinput events.
 ![rogdrv](/screenshot.png)
 ```
-Usage: rogdrv [--console]
-  --help       - display help
-  --console    - starts in pure console mode, disables tray icon
+Usage: rogdrv [--debug] [--console]
+  --help - display help
+  --debug - debug mode
+  --console - starts in pure console mode, disables tray icon
 ```
 
-rogdrv-config is a mouse configuration tool.
+**rogdrv-config** is a mouse configuration tool.
 ```
 Usage:
-  rogdrv-config --help                            - displays help
-  rogdrv-config --debug                           - enables debug mode
+  rogdrv-config <command> --help - display help for a command
+  rogdrv-config <command> [--debug] [args] - run a command
 
-  rogdrv-config actions                           - display list of available actions
-
-  rogdrv-config profile [value]                   - get/set profile
-    value: profile no. (1-3)
-
-  rogdrv-config bind [button action]              - bind a button or display bindings
-    button: button no. (1-99)
-    action: action code (241 or 0xF1 or 0xf1)
-
-  rogdrv-config dpi [value [preset]]              - get/set DPI
-    value: DPI (50-7200)
-    preset: 1 (default) or 2
-
-  rogdrv-config rate [hz]                         - get/set polling rate
-    hz: rate in Hz (125, 250, 500, 1000)
-
-  rogdrv-config response [ms]                     - get/set buttons response
-    ms: response in ms (4, 8, 12, 16, 20, 24, 28, 32)
-
-  rogdrv-config snapping [type]                   - get/set angle snapping type
-    type: angle snapping type (1 or 2)
-
-  rogdrv-config color [name r g b [mode] [brght]] - get/set LED colors
-    name: logo, wheel, bottom, all
-    r: red (0-255)
-    g: green (0-255)
-    b: blue (0-255)
-    mode: default, breath, rainbow, wave, reactive, flasher
-    brght: brightness 0-4 (default-4)
-
-  rogdrv-config sleep [value]                     - get/set sleep timeout
-    value: timeout in minutes (0-disabled, 1, 2, 3, 5, 10)
-
-  rogdrv-config dump [file]                       - save settings into file
-    file: path to json file
-
-  rogdrv-config load file                         - load settings from file
-    file: path to json file
+Available commands:
+  rogdrv-config actions - display list of available action codes
+  rogdrv-config bind - bind a button or display current bindings
+  rogdrv-config color - get/set LED colors
+  rogdrv-config dpi - get/set DPI
+  rogdrv-config dump - dump settings to stdout or .json file
+  rogdrv-config load - load settings from .json file
+  rogdrv-config profile - get/set profile
+  rogdrv-config rate - get/set polling rate
+  rogdrv-config response - get/set button response
+  rogdrv-config sleep - get/set sleep timeout and battery alert level
+  rogdrv-config snapping - enable/disable snapping
+  rogdrv-config version - get device firmware version
 ```
