@@ -16,6 +16,7 @@
 
 import json
 import logging
+import struct
 
 from evdev import uinput, ecodes
 
@@ -164,7 +165,15 @@ class Device(object, metaclass=DeviceMeta):
         :returns: pressed keys
         :rtype: set
         """
-        data = self._kbd.read(256)
+        pressed = set()
+
+        try:
+            data = self._kbd.read(256)
+        except (OSError, IOError) as e:
+            logger.debug(e)
+            return pressed
+
+        logger.debug('< ' + ' '.join('{:02X}'.format(i) for i in data))
 
         # TODO: implement modifiers
         mod = data[1]
@@ -176,16 +185,10 @@ class Device(object, metaclass=DeviceMeta):
             pass
 
         # collect current pressed buttons
-        pressed = set()
         for action in data[3:]:
-            if action not in defs.ACTIONS_KEYBOARD:
-                continue
-
-            evdev_name = defs.ACTIONS_KEYBOARD[action]
-            if evdev_name == 'UNDEFINED':
-                continue
-
-            pressed.add(getattr(ecodes, evdev_name))
+            evdev_name = defs.ACTIONS_KEYBOARD.get(action)
+            if evdev_name and evdev_name != 'UNDEFINED':
+                pressed.add(getattr(ecodes, evdev_name))
 
         return pressed
 
@@ -221,11 +224,22 @@ class Device(object, metaclass=DeviceMeta):
         :returns: response data
         :rtype: bytes
         """
-        self.write(request)
-        response = self.read()
+        tries = 0
+        tries_max = 10
+        while tries == 0 or (response[0] != request[0] and response[1] != request[1]):
+            if tries:
+                logger.debug('device in invalid state, retrying ({}/{})'.format(tries, tries_max))
 
-        if response[0] == 0xff and response[1] == 0xaa:
-            raise DeviceError()
+            self.write(request)
+            response = self.read()
+
+            if response[0] == 0xff and response[1] == 0xaa:
+                raise DeviceError()
+
+            if tries >= tries_max:
+                raise DeviceError()
+
+            tries += 1
 
         return response
 
@@ -237,6 +251,23 @@ class Device(object, metaclass=DeviceMeta):
         request = [0] * 64
         request[0] = 0x50
         request[1] = 0x03
+        self.query(bytes(request))
+
+    def fw_write(self, addr: int, block):
+        """
+        Write firmware block to device.
+        Looks like device should be rebooted into boot-mode before the firmware update.
+        Reference implementation, dangerous and never tested.
+        """
+        logger.debug('writing block {:04X}'.format(addr))
+        assert len(block) == 16
+        request = [0] * 64
+        request[0] = 0x50
+        request[4] = 0x10
+        request[5], request[6] = struct.pack('>H', addr)
+        for i, c in enumerate(block):
+            request[i + 8] = c
+        # request[24] = checksum?
         self.query(bytes(request))
 
     def get_bindings(self):
@@ -322,19 +353,17 @@ class Device(object, metaclass=DeviceMeta):
         """
         logger.debug('setting LED colors')
 
-        for color, r, g, b, brightness in iter(colors):
-            for led_name, led_id in defs.LED_NAMES.items():
-                if led_id == color + 1:
-                    self.set_color(led_name, (r, g, b), brightness=brightness)
+        for i, color in enumerate(iter(colors)):
+            self.set_color(defs.LEDS[i], color.rgb, color.mode, color.brightness)
 
-    def set_color(self, name, color, mode='default', brightness=4):
+    def set_color(self, led: str, color: tuple, mode: str = 'default', brightness: int = 4):
         """
         Set LED color.
 
-        :param name: led name (logo, wheel, bottom, all)
+        :param led: led name (logo, wheel, bottom, all)
         :type: str
 
-        :param color: color in format (r, g, b)
+        :param color: color as tuple (r, g, b)
         :type color: tuple
 
         :param mode: mode (default, breath, rainbow, wave, reactive, flasher)
@@ -361,18 +390,20 @@ class Device(object, metaclass=DeviceMeta):
         request[8] = color[2]  # b
         self.query(bytes(request))
 
-    def get_profile(self):
+    def get_profile_version(self):
         """
-        Get profile.
+        Get profile and firmware version
 
-        :returns: profile number (1-3)
-        :rtype: int
+        :returns: profile number (1-3), primary version, secondary version
+        :rtype: tuple
         """
-        logger.debug('getting profile')
+        logger.debug('getting profile and firmware versions')
         request = [0] * 64
         request[0] = 0x12
         response = self.query(bytes(request))
-        return response[10] + 1
+        ver1 = tuple(reversed((response[13], response[14], response[15])))
+        ver2 = tuple(reversed((response[4], response[5], response[6])))
+        return response[10] + 1, ver1, ver2
 
     def set_profile(self, profile: int):
         """
@@ -396,12 +427,26 @@ class Device(object, metaclass=DeviceMeta):
         # request[2] = 0x01
         self.query(bytes(request))
 
+    # def get_dpi_preset(self):
+    #     """
+    #     Get DPI preset.
+
+    #     :returns: preset number (1-4)
+    #     :rtype: int
+    #     """
+    #     logger.debug('getting DPI preset')
+    #     request = [0] * 64
+    #     request[0] = 0x12
+    #     request[1] = 0x01
+    #     response = self.query(bytes(request))
+    #     return response[4]
+
     def get_dpi_rate_response_snapping(self):
         """
         Get current DPI, rate and cursor snapping.
         """
         logger.debug('getting DPI and polling rate')
-        logger.debug("Number of dpi presets: {}".format(self.dpis))
+        logger.debug('number of dpi presets: {}'.format(self.dpis))
         request = [0] * 64
         request[0] = 0x12
         request[1] = 0x04
@@ -536,8 +581,10 @@ class Device(object, metaclass=DeviceMeta):
         self.query(bytes(request))
 
     def dump(self, f=None):
-        data = {}
-        saved_profile = self.get_profile()
+        data = {
+            'profiles': {},
+        }
+        saved_profile, _, _ = self.get_profile_version()
 
         for profile in range(1, self.profiles + 1):
             self.set_profile(profile)
@@ -558,7 +605,7 @@ class Device(object, metaclass=DeviceMeta):
             if self.wireless:
                 profile_data['sleep'], profile_data['alert'] = self.get_sleep_alert()
 
-            data[str(profile)] = profile_data
+            data['profiles'][str(profile)] = profile_data
 
         self.set_profile(saved_profile)
 
@@ -569,9 +616,9 @@ class Device(object, metaclass=DeviceMeta):
 
     def load(self, f):
         data = json.load(f)
-        saved_profile = self.get_profile()
+        saved_profile, _, _ = self.get_profile_version()
 
-        for profile, profile_data in data.items():
+        for profile, profile_data in data['profiles'].items():
             self.set_profile(int(profile))
 
             if 'binding' in profile_data:
@@ -605,6 +652,51 @@ class Device(object, metaclass=DeviceMeta):
         self.set_profile(saved_profile)
 
 
+class DoubleDPIMixin(object):
+    """
+    Mixin for devices which reports double DPI values.
+    """
+    def get_dpi_rate_response_snapping(self):
+        dpis, rate, bresponse, snapping = super().get_dpi_rate_response_snapping()
+        return ([dpi * 2 for dpi in dpis], rate, bresponse, snapping)
+
+    def set_dpi(self, dpi: int, preset=1):
+        super().set_dpi(dpi / 2, preset=preset)
+
+
+class BitmaskMixin(object):
+    """
+    Mixin for devices with bitmask-encoded keyboard events.
+    """
+    def next_event(self):
+        pressed = set()
+
+        try:
+            data = self._kbd.read(256)
+        except (OSError, IOError) as e:
+            logger.debug(e)
+            return pressed
+
+        logger.debug('< ' + ' '.join('{:02X}'.format(i) for i in data))
+
+        # python's struct doesn't have 16-byte numbers,
+        # so we have to use two 8-byte unsigned long long numbers
+        # also we have to add zero padding from 15 to 16 bytes length
+        low, high = struct.unpack('<QQ', bytes(data[2:2+15] + [0]))
+        bitmask = low | (high << (8 * 8))
+        bitmask_s = '{:0128b}'.format(bitmask)
+        logger.debug('got bitmask {}'.format(bitmask_s))
+
+        if bitmask:
+            for i, c in enumerate(reversed(bitmask_s)):  # from low bit to high
+                if c == '1':
+                    evdev_name = defs.ACTIONS_KEYBOARD.get(i)
+                    if evdev_name and evdev_name != 'UNDEFINED':
+                        pressed.add(getattr(ecodes, evdev_name))
+
+        return pressed
+
+
 class Gladius2(Device):
     """
     ROG Gladius II.
@@ -625,20 +717,13 @@ class Gladius2(Device):
     leds = 3
 
 
-class Gladius2Origin(Gladius2):
+class Gladius2Origin(DoubleDPIMixin, Gladius2):
     """
     ROG Gladius II Origin (8 buttons) - wired version, 12k DPI.
     Gladius II without DPI Dedicated Target Button.
     """
     product_id = 0x1877
     buttons = 8
-
-    def get_dpi_rate_response_snapping(self):
-        dpis, rate, bresponse, snapping = super().get_dpi_rate_response_snapping()
-        return ([dpi * 2 for dpi in dpis], rate, bresponse, snapping)
-
-    def set_dpi(self, dpi: int, preset=1):
-        super().set_dpi(dpi / 2, preset=preset)
 
 
 class Gladius2OriginPink(Gladius2Origin):
@@ -650,7 +735,7 @@ class Gladius2OriginPink(Gladius2Origin):
 
 class Pugio(Device):
     """
-    Gladius (8 buttons) based device with extra 2 buttons (10 buttons total).
+    Gladius II based 10 buttons device.
     """
     product_id = 0x1846
     profiles = 3
@@ -670,6 +755,14 @@ class Pugio(Device):
     leds = 3
 
 
+class PugioGladiusII(Pugio):
+    """
+    Pugio booted as Gladius II during firmware upgrade.
+    Can be rebooted back by replugging USB cable.
+    """
+    product_id = 0x1851
+
+
 class StrixCarry(Device):
     """
     Wireless only device without any LEDs.
@@ -681,12 +774,14 @@ class StrixCarry(Device):
     keyboard_interface = 2
     control_interface = 1
 
-    def get_profile(self):
-        # logger.debug('getting profile')
+    def get_profile_version(self):
+        logger.debug('getting profile')
         request = [0] * 64
         request[0] = 0x12
         response = self.query(bytes(request))
-        return response[9] + 1
+        ver1 = tuple(reversed((response[12], response[13], response[14])))
+        ver2 = tuple(reversed((response[4], response[5], response[6])))
+        return response[9] + 1, ver1, ver2
 
 
 class StrixImpact(Device):
@@ -743,7 +838,7 @@ class Buzzard(Device):
     buttons = 10
 
 
-class KerisWireless(Device):
+class KerisWireless(DoubleDPIMixin, BitmaskMixin, Device):
     """
     Keris Wireless in wireless mode.
     """

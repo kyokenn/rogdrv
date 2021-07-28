@@ -116,12 +116,12 @@ ACTION_TYPE_MOUSE = 1
 EVDEV_PRESS = 1
 EVDEV_RELEASE = 0
 
-LED_NAMES = {
-    'logo': 0,
-    'wheel': 1,
-    'bottom': 2,
-    'all': 3,
-}
+LEDS = (
+    'logo',
+    'wheel',
+    'bottom',
+    'all',
+)
 
 LED_MODES = {
     'default': 0,
