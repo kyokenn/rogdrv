@@ -1,5 +1,7 @@
 import copy
 
+from . import defs
+
 
 DEFAULT_COLORS = {
     1: (255, 0, 0),
@@ -7,57 +9,93 @@ DEFAULT_COLORS = {
     3: (0, 0, 255),
 }
 
-DEFAULT_BRIGHTNESS = {
-    1: 4,
-    2: 4,
-    3: 4,
-}
+
+class Color(object):
+    def __init__(self, r: int, g: int, b: int, brightness: int, mode: str):
+        self.r = r
+        self.g = g
+        self.b = b
+        self.brightness = brightness
+        self.mode = mode
+
+    @property
+    def rgb(self):
+        return (self.r, self.g, self.b)
+
+    @property
+    def hex(self):
+        return '{:02X}{:02X}{:02X}'.format(*self.rgb)
 
 
 class Colors(object):
     def __init__(self, count):
-        self._colors = {}
-        self._brightness = {}
-
-        for i in range(1, count + 1):
-            self._colors[i] = DEFAULT_COLORS[i]
-            self._brightness[i] = DEFAULT_BRIGHTNESS[i]
+        self._colors = [None] * count
+        for i in range(self.count):
+            r, g, b = DEFAULT_COLORS[i + 1]
+            self._colors[i] = Color(r, g, b, 4, 'default')
 
     @property
     def count(self):
-        return len(tuple(self._colors.keys()))
+        return len(self._colors)
 
     def load(self, data):
-        if type(data) == dict:
-            for i in range(1, self.count + 1):
-                self._brightness[i] = data['b{}'.format(i)]
-                self._colors[i] = data['c{}'.format(i)]
+        if isinstance(data, dict):  # load from json settings backup
+            self._colors = [None] * len(tuple(data.keys()))
+            for led, item in data.items():
+                self._colors[defs.LEDS.index(led)] = Color(
+                    item['r'], item['g'], item['b'],
+                    item['brightness'],
+                    item['mode'])
 
-        else:
-            self._brightness[1] = data[5]
-            self._colors[1] = data[6], data[7], data[8]
-            self._brightness[2] = data[10]
-            self._colors[2] = data[11], data[12], data[13]
-            self._brightness[3] = data[15]
-            self._colors[3] = data[16], data[17], data[18]
+        else:  # load from device
+            off = 4
+            for i in range(self.count):
+                mode = 'default'
+                for k, v in defs.LED_MODES.items():
+                    if v == data[off]:
+                        mode = k
+                off += 1
+                brightness = data[off]
+                off += 1
+                r = data[off]
+                off += 1
+                g = data[off]
+                off += 1
+                b = data[off]
+                off += 1
+                self._colors[i] = Color(r, g, b, brightness, mode)
 
     def export(self):
         data = {}
-        for k, v in self._colors.items():
-            data['c{}'.format(k)] = v
-        for k, v in self._brightness.items():
-            data['b{}'.format(k)] = v
+
+        for i in range(self.count):
+            data[defs.LEDS[i]] = {
+                'r': self._colors[i].r,
+                'g': self._colors[i].g,
+                'b': self._colors[i].b,
+                'brightness': self._colors[i].brightness,
+                'mode': self._colors[i].mode,
+            }
+
         return data
 
     def __iter__(self):
-        for color, (r, g, b) in self._colors.items():
-            yield color, r, g, b, self._brightness[color]
+        for color in self._colors:
+            yield color
 
     def __str__(self):
-        template = '''1 (logo):\t[brightness:{b1}] {c1}
-2 (wheel):\t[brightness:{b2}] {c2}
-3 (bottom):\t[brightness:{b3}] {c3}'''
-        lines = template.split('\n')[:self.count - 1]
-        template2 = '\n'.join(lines)
+        lines = [
+            ' LED       | MODE    | COLOR  | BRIGHTNESS',
+            '-----------|---------|--------|-----------'
+        ]
 
-        return template2.format(**self.export())
+        for i, color in enumerate(self._colors):
+            lines.append('{i} {led} | {mode} | {color} | {brightness}'.format(**{
+                'i': str(i + 1).rjust(2),
+                'led': defs.LEDS[i].ljust(7),
+                'mode': color.mode.ljust(7),
+                'color': color.hex,
+                'brightness': color.brightness,
+            }))
+
+        return '\n'.join(lines)
