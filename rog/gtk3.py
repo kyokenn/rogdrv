@@ -24,6 +24,8 @@ gi.require_version('Notify', '0.7')
 from gi.repository import Gtk
 from gi.repository import Notify
 
+from . import logger
+
 APPID = 'rogdrv'
 
 
@@ -92,7 +94,7 @@ class EventHandler(object):
         Gtk.main_quit()
 
     def on_autostart(self, item, *args, **kwargs):
-        print('on_autostart', item.get_active())
+        logger.debug('autostart '.format('enabled' if item.get_active() else 'disabled'))
         if item.get_active():
             with open(get_autostart_path(), 'w') as f:
                 f.write('''
@@ -110,24 +112,26 @@ StartupNotify=false
                 os.remove(get_autostart_path())
 
     def on_profile(self, item, *args, **kwargs):
-        profile = self._device.get_profile()
+        profile, _, _ = self._device.get_profile_version()
         for i in range(1, 3 + 1):
             menu_item = self._builder.get_object('menu_profile_{}'.format(i))
             if i == profile:
                 menu_item.set_active(True)
-            # menu_item.set_active(i == profile)
+
+    def _on_profile_x(self, item, profile_new):
+        if item.get_active():
+            profile_current, _, _ = self._device.get_profile_version()
+            if profile_current != profile_new:
+                self._device.set_profile(profile_new)
 
     def on_profile_1(self, item, *args, **kwargs):
-        if item.get_active():
-            self._device.set_profile(1)
+        self._on_profile_x(item, 1)
 
     def on_profile_2(self, item, *args, **kwargs):
-        if item.get_active():
-            self._device.set_profile(2)
+        self._on_profile_x(item, 2)
 
     def on_profile_3(self, item, *args, **kwargs):
-        if item.get_active():
-            self._device.set_profile(3)
+        self._on_profile_x(item, 3)
 
 
 def gtk3_main(device):
