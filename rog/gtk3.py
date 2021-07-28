@@ -24,7 +24,7 @@ gi.require_version('Notify', '0.7')
 from gi.repository import Gtk
 from gi.repository import Notify
 
-from . import logger
+from . import defs, logger
 
 APPID = 'rogdrv'
 
@@ -85,16 +85,30 @@ class TrayIcon(object):
 
 
 class EventHandler(object):
+    """
+    GTK event handler for tray icon menu.
+    """
     def __init__(self, builder, device):
         self._builder = builder
         self._device = device
+
+        for i in range(1, 6 + 1):
+            menu_item = self._builder.get_object('menu_profile_{}'.format(i))
+            if i > self._device.profiles:
+                menu_item.set_visible(False)
+
+        for i in range(1, 4 + 1):
+            menu_item = self._builder.get_object('menu_dpi_{}'.format(i))
+            if i > self._device.dpis:
+                menu_item.set_visible(False)
 
     def on_quit(self, *args, **kwargs):
         Notify.uninit()
         Gtk.main_quit()
 
     def on_autostart(self, item, *args, **kwargs):
-        logger.debug('autostart '.format('enabled' if item.get_active() else 'disabled'))
+        logger.debug(
+            'autostart '.format('enabled' if item.get_active() else 'disabled'))
         if item.get_active():
             with open(get_autostart_path(), 'w') as f:
                 f.write('''
@@ -111,27 +125,47 @@ StartupNotify=false
             if os.path.exists(get_autostart_path()):
                 os.remove(get_autostart_path())
 
-    def on_profile(self, item, *args, **kwargs):
+    def on_profiles(self, item, *args, **kwargs):
         profile, _, _ = self._device.get_profile_version()
-        for i in range(1, 3 + 1):
+        logger.debug('current profile is {}'.format(profile))
+        for i in range(1, self._device.profiles + 1):
             menu_item = self._builder.get_object('menu_profile_{}'.format(i))
             if i == profile:
                 menu_item.set_active(True)
 
-    def _on_profile_x(self, item, profile_new):
+    def on_profile(self, item, *args, **kwargs):
         if item.get_active():
-            profile_current, _, _ = self._device.get_profile_version()
-            if profile_current != profile_new:
+            profile_old, _, _ = self._device.get_profile_version()
+            profile_new = int(str(item.get_action_target_value()))  # GVariant -> str -> int
+            if profile_old != profile_new:
+                logger.debug(
+                    'switching profile from {} to {}'
+                    .format(profile_old, profile_new))
                 self._device.set_profile(profile_new)
 
-    def on_profile_1(self, item, *args, **kwargs):
-        self._on_profile_x(item, 1)
+    def on_dpis(self, item, *args, **kwargs):
+        dpis, _, _, _ = self._device.get_dpi_rate_response_snapping()
+        for i, dpi in enumerate(dpis, start=1):
+            menu_item = self._builder.get_object('menu_dpi_{}'.format(i))
+            menu_item.set_label('Preset {}: {}'.format(i, dpi))
 
-    def on_profile_2(self, item, *args, **kwargs):
-        self._on_profile_x(item, 2)
+    def on_rates(self, item, *args, **kwargs):
+        _, rate, _, _ = self._device.get_dpi_rate_response_snapping()
+        logger.debug('current polling rate is {}'.format(rate))
+        for irate in defs.POLLING_RATES.values():
+            menu_item = self._builder.get_object('menu_rate_{}'.format(irate))
+            if irate == rate:
+                menu_item.set_active(True)
 
-    def on_profile_3(self, item, *args, **kwargs):
-        self._on_profile_x(item, 3)
+    def on_rate(self, item, *args, **kwargs):
+        if item.get_active():
+            _, rate_old, _, _ = self._device.get_dpi_rate_response_snapping()
+            rate_new = int(str(item.get_action_target_value()))  # GVariant -> str -> int
+            if rate_old != rate_new:
+                logger.debug(
+                    'changing polling rate from {} to {}'
+                    .format(rate_old, rate_new))
+                self._device.set_rate(rate_new)
 
 
 def gtk3_main(device):

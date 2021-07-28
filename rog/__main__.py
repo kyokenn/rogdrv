@@ -249,7 +249,7 @@ Available commands:''')
 
         dpis, rate, response, snapping = self._device.get_dpi_rate_response_snapping()
         for i, dpi in enumerate(dpis, start=1):
-            print('DPI Preset {}: {}'.format(i, dpi))
+            print('DPI Preset {} ({}): {}'.format(i, defs.DPI_PRESET_COLORS[i], dpi))
 
     def rate(self):
         """

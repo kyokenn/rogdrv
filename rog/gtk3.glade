@@ -1,48 +1,224 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.20.0 -->
+<!-- Generated with glade 3.38.2 
+
+Copyright (C) Copyright (C) 2021 Kyoken, kyoken@kyoken.ninja
+
+This file is part of ROGDRV.
+
+ROGDRV is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+ROGDRV is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with ROGDRV.  If not, see <http://www.gnu.org/licenses/>.
+
+Author: Kyoken
+
+-->
 <interface>
-  <requires lib="gtk+" version="3.20"/>
+  <requires lib="gtk+" version="3.22"/>
+  <!-- interface-license-type gplv3 -->
+  <!-- interface-name ROGDRV -->
+  <!-- interface-description ASUS ROG Mouse Driver -->
+  <!-- interface-copyright Copyright (C) 2021 Kyoken, kyoken@kyoken.ninja -->
+  <!-- interface-authors Kyoken -->
   <object class="GtkMenu" id="menu">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <child>
-      <object class="GtkMenuItem" id="menu_profile">
+      <object class="GtkMenuItem" id="menu_profiles">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="label" translatable="yes">Profile</property>
-        <property name="use_underline">True</property>
-        <signal name="activate" handler="on_profile" swapped="yes"/>
+        <property name="use-underline">True</property>
+        <signal name="activate" handler="on_profiles" swapped="yes"/>
         <child type="submenu">
           <object class="GtkMenu">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <child>
               <object class="GtkRadioMenuItem" id="menu_profile_1">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">1</property>
                 <property name="label" translatable="yes">Profile 1</property>
-                <property name="use_underline">True</property>
-                <signal name="activate" handler="on_profile_1" swapped="yes"/>
+                <property name="use-underline">True</property>
+                <property name="group">menu_profile_2</property>
+                <signal name="activate" handler="on_profile" swapped="yes"/>
               </object>
             </child>
             <child>
               <object class="GtkRadioMenuItem" id="menu_profile_2">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">2</property>
                 <property name="label" translatable="yes">Profile 2</property>
-                <property name="use_underline">True</property>
+                <property name="use-underline">True</property>
                 <property name="group">menu_profile_1</property>
-                <signal name="activate" handler="on_profile_2" swapped="yes"/>
+                <signal name="activate" handler="on_profile" swapped="yes"/>
               </object>
             </child>
             <child>
               <object class="GtkRadioMenuItem" id="menu_profile_3">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">3</property>
                 <property name="label" translatable="yes">Profile 3</property>
-                <property name="use_underline">True</property>
+                <property name="use-underline">True</property>
                 <property name="group">menu_profile_1</property>
-                <signal name="activate" handler="on_profile_3" swapped="yes"/>
+                <signal name="activate" handler="on_profile" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="menu_profile_4">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">4</property>
+                <property name="label" translatable="yes">Profile 4</property>
+                <property name="use-underline">True</property>
+                <property name="group">menu_profile_1</property>
+                <signal name="activate" handler="on_profile" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="menu_profile_5">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">5</property>
+                <property name="label" translatable="yes">Profile 5</property>
+                <property name="use-underline">True</property>
+                <property name="group">menu_profile_1</property>
+                <signal name="activate" handler="on_profile" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="menu_profile_6">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">6</property>
+                <property name="label" translatable="yes">Profile 6</property>
+                <property name="use-underline">True</property>
+                <property name="group">menu_profile_1</property>
+                <signal name="activate" handler="on_profile" swapped="yes"/>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="menu_dpis">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">DPI</property>
+        <property name="use-underline">True</property>
+        <signal name="activate" handler="on_dpis" swapped="yes"/>
+        <child type="submenu">
+          <object class="GtkMenu">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkMenuItem" id="menu_dpi_1">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">1</property>
+                <property name="label" translatable="yes">Preset 1</property>
+                <property name="use-underline">True</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="menu_dpi_2">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">2</property>
+                <property name="label" translatable="yes">Preset 2</property>
+                <property name="use-underline">True</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="menu_dpi_3">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">3</property>
+                <property name="label" translatable="yes">Preset 3</property>
+                <property name="use-underline">True</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="menu_dpi_4">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">4</property>
+                <property name="label" translatable="yes">Preset 4</property>
+                <property name="use-underline">True</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="menu_rates">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">Polling rate</property>
+        <property name="use-underline">True</property>
+        <signal name="activate" handler="on_rates" swapped="yes"/>
+        <child type="submenu">
+          <object class="GtkMenu">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkRadioMenuItem" id="menu_rate_125">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">125</property>
+                <property name="label" translatable="yes">125 Hz</property>
+                <property name="use-underline">True</property>
+                <property name="group">menu_rate_250</property>
+                <signal name="activate" handler="on_rate" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="menu_rate_250">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">250</property>
+                <property name="label" translatable="yes">250 Hz</property>
+                <property name="use-underline">True</property>
+                <property name="draw-as-radio">True</property>
+                <property name="group">menu_rate_125</property>
+                <signal name="activate" handler="on_rate" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="menu_rate_500">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">500</property>
+                <property name="label" translatable="yes">500 Hz</property>
+                <property name="use-underline">True</property>
+                <property name="draw-as-radio">True</property>
+                <property name="group">menu_rate_125</property>
+                <signal name="activate" handler="on_rate" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="menu_rate_1000">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">1000</property>
+                <property name="label" translatable="yes">1000 Hz</property>
+                <property name="use-underline">True</property>
+                <property name="draw-as-radio">True</property>
+                <property name="group">menu_rate_125</property>
+                <signal name="activate" handler="on_rate" swapped="yes"/>
               </object>
             </child>
           </object>
@@ -52,18 +228,18 @@
     <child>
       <object class="GtkCheckMenuItem" id="menu_autostart">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="label" translatable="yes">Autostart</property>
-        <property name="use_underline">True</property>
+        <property name="use-underline">True</property>
         <signal name="toggled" handler="on_autostart" swapped="yes"/>
       </object>
     </child>
     <child>
       <object class="GtkMenuItem" id="menu_quit">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="label" translatable="yes">Quit</property>
-        <property name="use_underline">True</property>
+        <property name="use-underline">True</property>
         <signal name="activate" handler="on_quit" swapped="yes"/>
       </object>
     </child>

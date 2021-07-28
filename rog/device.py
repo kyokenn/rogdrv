@@ -213,7 +213,7 @@ class Device(object, metaclass=DeviceMeta):
         logger.debug('> ' + ' '.join('{:02X}'.format(i) for i in data))
         self._ctl.write(data)
 
-    def query(self, request):
+    def query(self, request, strict=True):
         """
         Query the control subdevice.
         Write request to control subdevice then read response from it.
@@ -226,20 +226,23 @@ class Device(object, metaclass=DeviceMeta):
         """
         tries = 0
         tries_max = 10
-        while tries == 0 or (response[0] != request[0] and response[1] != request[1]):
-            if tries:
-                logger.debug('device in invalid state, retrying ({}/{})'.format(tries, tries_max))
 
+        while tries < tries_max:
             self.write(request)
             response = self.read()
 
             if response[0] == 0xff and response[1] == 0xaa:
                 raise DeviceError()
 
-            if tries >= tries_max:
-                raise DeviceError()
+            if strict and (response[0] != request[0] or response[1] != request[1]):
+                tries += 1
+                logger.debug('device is in invalid state, retrying ({}/{})'.format(tries, tries_max))
+                continue
 
-            tries += 1
+            break
+
+        else:
+            raise DeviceError()
 
         return response
 

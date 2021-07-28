@@ -133,6 +133,13 @@ LED_MODES = {
     'battery': 6,
 }
 
+DPI_PRESET_COLORS = {
+    1: 'red',
+    2: 'purple',
+    3: 'blue',
+    4: 'green',
+}
+
 POLLING_RATES = {
     0: 125,
     1: 250,
