@@ -102,6 +102,10 @@ class EventHandler(object):
             if i > self._device.dpis:
                 menu_item.set_visible(False)
 
+        if not self._device.wireless:
+            menu_item = self._builder.get_object('menu_sleep')
+            menu_item.set_visible(False)
+
     def on_quit(self, *args, **kwargs):
         Notify.uninit()
         Gtk.main_quit()
@@ -125,7 +129,7 @@ StartupNotify=false
             if os.path.exists(get_autostart_path()):
                 os.remove(get_autostart_path())
 
-    def on_profiles(self, item, *args, **kwargs):
+    def on_profile_choice(self, item, *args, **kwargs):
         profile, _, _ = self._device.get_profile_version()
         logger.debug('current profile is {}'.format(profile))
         for i in range(1, self._device.profiles + 1):
@@ -143,13 +147,15 @@ StartupNotify=false
                     .format(profile_old, profile_new))
                 self._device.set_profile(profile_new)
 
-    def on_dpis(self, item, *args, **kwargs):
+    def on_dpi_choice(self, item, *args, **kwargs):
         dpis, _, _, _ = self._device.get_dpi_rate_response_snapping()
         for i, dpi in enumerate(dpis, start=1):
             menu_item = self._builder.get_object('menu_dpi_{}'.format(i))
-            menu_item.set_label('Preset {}: {}'.format(i, dpi))
+            menu_item.set_label(
+                'Preset {} ({}): {}'
+                .format(i, defs.DPI_PRESET_COLORS[i], dpi))
 
-    def on_rates(self, item, *args, **kwargs):
+    def on_rate_choice(self, item, *args, **kwargs):
         _, rate, _, _ = self._device.get_dpi_rate_response_snapping()
         logger.debug('current polling rate is {}'.format(rate))
         for irate in defs.POLLING_RATES.values():
@@ -167,6 +173,43 @@ StartupNotify=false
                     .format(rate_old, rate_new))
                 self._device.set_rate(rate_new)
 
+    def on_perf_choice(self, item, *args, **kwargs):
+        _, _, _, snapping = self._device.get_dpi_rate_response_snapping()
+        logger.debug(
+            'angle snapping is {}'
+            .format('enabled' if snapping else 'disabled'))
+        menu_item = self._builder.get_object('menu_snapping')
+        menu_item.set_active(snapping)
+
+    def on_snapping(self, item, *args, **kwargs):
+        _, _, _, snapping = self._device.get_dpi_rate_response_snapping()
+        if item.get_active() != snapping:
+            logger.debug(
+                'angle snapping is {}'
+                .format('enabled' if snapping else 'disabled'))
+
+            logger.debug(
+                '{} angle snapping'
+                .format('enabling' if item.get_active() else 'disabling'))
+            self._device.set_snapping(item.get_active())
+
+    def on_sleep_choice(self, item, *args, **kwargs):
+        sleep, _ = self._device.get_sleep_alert()
+        logger.debug('current sleep timeout is {}'.format(sleep))
+        for isleep in defs.SLEEP_TIME.values():
+            menu_item = self._builder.get_object('menu_sleep_{}'.format(isleep))
+            if isleep == sleep:
+                menu_item.set_active(True)
+
+    def on_sleep(self, item, *args, **kwargs):
+        if item.get_active():
+            sleep_old, alert = self._device.get_sleep_alert()
+            sleep_new = int(str(item.get_action_target_value()))  # GVariant -> str -> int
+            if sleep_old != sleep_new:
+                logger.debug(
+                    'changing sleep timeout from {} to {}'
+                    .format(sleep_old, sleep_new))
+                self._device.set_sleep_alert(sleep_new, alert)
 
 def gtk3_main(device):
     # Handle pressing Ctr+C properly, ignored by default
