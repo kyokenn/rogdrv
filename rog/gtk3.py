@@ -57,7 +57,10 @@ def get_autostart_path():
     return os.path.join(home, '.config', 'autostart', 'rogdrv.desktop')
 
 
-class TrayIcon(object):
+class TrayMenu(object):
+    """
+    Tray icon menu.
+    """
     def __init__(self, icon_path, menu):
         self._menu = menu
 
@@ -84,7 +87,7 @@ class TrayIcon(object):
             icon, button, time)
 
 
-class EventHandler(object):
+class TrayMenuEventHandler(object):
     """
     GTK event handler for tray icon menu.
     """
@@ -93,8 +96,8 @@ class EventHandler(object):
         self._device = device
 
         for i in range(1, 6 + 1):
-            menu_item = self._builder.get_object('menu_profile_{}'.format(i))
             if i > self._device.profiles:
+                menu_item = self._builder.get_object('menu_profile_{}'.format(i))
                 menu_item.set_visible(False)
 
         for i in range(1, 4 + 1):
@@ -106,11 +109,19 @@ class EventHandler(object):
             self._builder.get_object('menu_sleep').set_visible(False)
             self._builder.get_object('menu_battery').set_visible(False)
 
+        for i, name in enumerate(defs.LEDS[:3]):
+            if i >= self._device.leds:
+                menu_item = self._builder.get_object('menu_led_{}'.format(name))
+                menu_item.set_visible(False)
+
     def on_quit(self, *args, **kwargs):
         Notify.uninit()
         Gtk.main_quit()
 
     def on_autostart(self, item, *args, **kwargs):
+        """
+        Event on autostart option toggle.
+        """
         logger.debug(
             'autostart '.format('enabled' if item.get_active() else 'disabled'))
         if item.get_active():
@@ -130,6 +141,9 @@ StartupNotify=false
                 os.remove(get_autostart_path())
 
     def on_profile_choice(self, item, *args, **kwargs):
+        """
+        Event on profile submenu expanding.
+        """
         profile, _, _ = self._device.get_profile_version()
         logger.debug('current profile is {}'.format(profile))
         for i in range(1, self._device.profiles + 1):
@@ -138,6 +152,9 @@ StartupNotify=false
                 menu_item.set_active(True)
 
     def on_profile(self, item, *args, **kwargs):
+        """
+        Event on profile select.
+        """
         if item.get_active():
             profile_old, _, _ = self._device.get_profile_version()
             profile_new = int(str(item.get_action_target_value()))  # GVariant -> str -> int
@@ -148,6 +165,9 @@ StartupNotify=false
                 self._device.set_profile(profile_new)
 
     def on_dpi_choice(self, item, *args, **kwargs):
+        """
+        Event on DPI submenu expanding.
+        """
         dpis, _, _, _ = self._device.get_dpi_rate_response_snapping()
         for i, dpi in enumerate(dpis, start=1):
             menu_item = self._builder.get_object('menu_dpi_{}'.format(i))
@@ -156,6 +176,9 @@ StartupNotify=false
                 .format(i, defs.DPI_PRESET_COLORS[i], dpi))
 
     def on_rate_choice(self, item, *args, **kwargs):
+        """
+        Event on polling rate submenu expanding.
+        """
         _, rate, _, _ = self._device.get_dpi_rate_response_snapping()
         logger.debug('current polling rate is {}'.format(rate))
         for irate in defs.POLLING_RATES.values():
@@ -164,6 +187,9 @@ StartupNotify=false
                 menu_item.set_active(True)
 
     def on_rate(self, item, *args, **kwargs):
+        """
+        Event on polling rate select.
+        """
         if item.get_active():
             _, rate_old, _, _ = self._device.get_dpi_rate_response_snapping()
             rate_new = int(str(item.get_action_target_value()))  # GVariant -> str -> int
@@ -175,6 +201,9 @@ StartupNotify=false
                 self._device.save()
 
     def on_perf_choice(self, item, *args, **kwargs):
+        """
+        Event on performance submenu expanding.
+        """
         _, _, _, snapping = self._device.get_dpi_rate_response_snapping()
         logger.debug(
             'angle snapping is {}'
@@ -183,6 +212,9 @@ StartupNotify=false
         menu_item.set_active(snapping)
 
     def on_snapping(self, item, *args, **kwargs):
+        """
+        Event on angle snapping option toggle.
+        """
         _, _, _, snapping = self._device.get_dpi_rate_response_snapping()
         if item.get_active() != snapping:
             logger.debug(
@@ -196,7 +228,10 @@ StartupNotify=false
             self._device.save()
 
     def on_sleep_choice(self, item, *args, **kwargs):
-        sleep, _ = self._device.get_sleep_alert()
+        """
+        Event on sleep submenu expanding.
+        """
+        sleep, _, _ = self._device.get_sleep_charge_alert()
         logger.debug('current sleep timeout is {}'.format(sleep))
         for isleep in defs.SLEEP_TIME.values():
             menu_item = self._builder.get_object('menu_sleep_{}'.format(isleep))
@@ -204,8 +239,11 @@ StartupNotify=false
                 menu_item.set_active(True)
 
     def on_sleep(self, item, *args, **kwargs):
+        """
+        Event on sleep timeout option select.
+        """
         if item.get_active():
-            sleep_old, alert = self._device.get_sleep_alert()
+            sleep_old, _, alert = self._device.get_sleep_charge_alert()
             sleep_new = int(str(item.get_action_target_value()))  # GVariant -> str -> int
             if sleep_old != sleep_new:
                 logger.debug(
@@ -215,19 +253,24 @@ StartupNotify=false
                 self._device.save()
 
     def on_battery_choice(self, item, *args, **kwargs):
-        _, alert = self._device.get_sleep_alert()
+        """
+        Event on battery submenu expanding.
+        """
+        _, charge, alert = self._device.get_sleep_charge_alert()
         logger.debug('current battery alert level is {}%'.format(alert))
         for ialert in (0, 25, 50):
             menu_item = self._builder.get_object('menu_alert_{}'.format(ialert))
             if ialert == alert:
                 menu_item.set_active(True)
 
-        menu_item = self._builder.get_object('menu_charge')
-        menu_item.set_label('Charge level: ?%')  # TODO: implement
+        self._builder.get_object('menu_charge').set_label('Charge: {}%'.format(charge))
 
     def on_alert(self, item, *args, **kwargs):
+        """
+        Event on battery alert level select.
+        """
         if item.get_active():
-            sleep, alert_old = self._device.get_sleep_alert()
+            sleep, _, alert_old = self._device.get_sleep_charge_alert()
             alert_new = int(str(item.get_action_target_value()))  # GVariant -> str -> int
             if alert_old != alert_new:
                 logger.debug(
@@ -235,6 +278,31 @@ StartupNotify=false
                     .format(alert_old, alert_new))
                 self._device.set_sleep_alert(sleep, alert_new)
                 self._device.save()
+
+    def on_led_logo_choice(self, item, *args, **kwargs):
+        self._on_led_choice('logo', item, *args, **kwargs)
+
+    def on_led_wheel_choice(self, item, *args, **kwargs):
+        self._on_led_choice('wheel', item, *args, **kwargs)
+
+    def on_led_bottom_choice(self, item, *args, **kwargs):
+        self._on_led_choice('bottom', item, *args, **kwargs)
+
+    def _on_led_choice(self, name, item, *args, **kwargs):
+        leds = self._device.get_leds()
+        for i, led in enumerate(leds):
+            if defs.LEDS[i] == name:
+                c = self._builder.get_object('menu_led_{}_color'.format(name))
+                c.set_label('Color: {}'.format(led.hex))
+
+                b = self._builder.get_object('menu_led_{}_brightness'.format(name))
+                b.set_label('Brightness: {}%'.format(led.brightness * 25))
+
+                m = self._builder.get_object('menu_led_{}_mode'.format(name))
+                m.set_label('Mode: {}'.format(led.mode))
+
+    def on_led_mode_choice(self, item, *args, **kwargs):
+        pass
 
 
 def gtk3_main(device):
@@ -257,9 +325,9 @@ def gtk3_main(device):
         profile.set_visible(False)
 
     # bind events
-    builder.connect_signals(EventHandler(builder, device))
+    builder.connect_signals(TrayMenuEventHandler(builder, device))
 
     # create tray icon
-    trayicon = TrayIcon(next(find_icons()), builder.get_object('menu'))
+    trayicon = TrayMenu(next(find_icons()), builder.get_object('menu'))
     Notify.init(APPID)
     Gtk.main()

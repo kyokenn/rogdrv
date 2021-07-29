@@ -22,7 +22,8 @@ import threading
 import logging
 
 from . import defs
-from .device import EventHandler, get_device
+from .event import DeviceEventHandler
+from .device import get_device
 
 logger = logging.getLogger('rogdrv')
 
@@ -41,7 +42,7 @@ class ROGDRV(threading.Thread):
         self._args = parser.parse_args()
 
         self._device = get_device()
-        self._handler = EventHandler()
+        self._handler = DeviceEventHandler()
         self._is_running = True
 
     @property
@@ -185,7 +186,7 @@ Available commands:''')
 
         print(self._device.get_bindings())
 
-    def color(self):
+    def led(self):
         """
         get/set LED colors
         """
@@ -218,13 +219,13 @@ Available commands:''')
                 g = int(args.color[2:4], 16)
                 b = int(args.color[4:6], 16)
 
-            self._device.set_color(
+            self._device.set_led(
                 args.led or 'all', (r, g, b),
                 mode=args.mode or 'default',
                 brightness=args.brightness)
             self._device.save()
 
-        print(self._device.get_colors())
+        print(self._device.get_leds())
 
     def dpi(self):
         """
@@ -270,7 +271,7 @@ Available commands:''')
 
     def sleep(self):
         """
-        get/set sleep timeout and battery alert level
+        get/set sleep timeout, battery charge and alert level
         """
         parser = argparse.ArgumentParser()
         parser.add_argument(
@@ -298,9 +299,10 @@ Available commands:''')
             self._device.set_sleep_alert(timeout, level)
             self._device.save()
 
-        t, l = self._device.get_sleep_alert()
-        print('Sleep: {}'.format('{} min.'.format(t) if t else 'disabled'))
-        print('Alert: {}'.format('{}%'.format(l) if l else 'disabled'))
+        sleep, charge, alert = self._device.get_sleep_charge_alert()
+        print('Sleep: {}'.format('{} min.'.format(sleep) if sleep else 'disabled'))
+        print('Charge: {}%'.format(charge))
+        print('Alert: {}'.format('{}%'.format(alert) if alert else 'disabled'))
 
     def snapping(self):
         """
