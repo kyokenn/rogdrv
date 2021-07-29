@@ -326,7 +326,7 @@ class Device(object, metaclass=DeviceMeta):
         logger.debug('setting LED colors')
 
         for i, led in enumerate(iter(leds)):
-            self.set_color(defs.LEDS[i], led.rgb, led.mode, led.brightness)
+            self.set_color(defs.LED_NAMES[i], led.rgb, led.mode, led.brightness)
 
     def set_led(self, name: str, color: tuple, mode: str = 'default', brightness: int = 4):
         """
@@ -354,8 +354,8 @@ class Device(object, metaclass=DeviceMeta):
         request = [0] * 64
         request[0] = 0x51
         request[1] = 0x28
-        request[2] = defs.LEDS.index(name)
-        request[4] = defs.LED_MODES[mode]
+        request[2] = defs.LED_NAMES.index(name)
+        request[4] = defs.LED_MODES.index(mode)
         request[5] = brightness
         request[6] = color[0]  # r
         request[7] = color[1]  # g

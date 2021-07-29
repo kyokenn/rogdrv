@@ -109,7 +109,7 @@ class TrayMenuEventHandler(object):
             self._builder.get_object('menu_sleep').set_visible(False)
             self._builder.get_object('menu_battery').set_visible(False)
 
-        for i, name in enumerate(defs.LEDS[:3]):
+        for i, name in enumerate(defs.LED_NAMES[:3]):
             if i >= self._device.leds:
                 menu_item = self._builder.get_object('menu_led_{}'.format(name))
                 menu_item.set_visible(False)
@@ -279,19 +279,13 @@ StartupNotify=false
                 self._device.set_sleep_alert(sleep, alert_new)
                 self._device.save()
 
-    def on_led_logo_choice(self, item, *args, **kwargs):
-        self._on_led_choice('logo', item, *args, **kwargs)
-
-    def on_led_wheel_choice(self, item, *args, **kwargs):
-        self._on_led_choice('wheel', item, *args, **kwargs)
-
-    def on_led_bottom_choice(self, item, *args, **kwargs):
-        self._on_led_choice('bottom', item, *args, **kwargs)
-
-    def _on_led_choice(self, name, item, *args, **kwargs):
+    def on_led_choice(self, item, *args, **kwargs):
         leds = self._device.get_leds()
+        iled = int(str(item.get_action_target_value()))  # GVariant -> str -> int
         for i, led in enumerate(leds):
-            if defs.LEDS[i] == name:
+            if iled == i:
+                name = defs.LED_NAMES[i]
+
                 c = self._builder.get_object('menu_led_{}_color'.format(name))
                 c.set_label('Color: {}'.format(led.hex))
 
@@ -302,8 +296,26 @@ StartupNotify=false
                 m.set_label('Mode: {}'.format(led.mode))
 
     def on_led_mode_choice(self, item, *args, **kwargs):
-        pass
+        leds = self._device.get_leds()
+        iled = int(str(item.get_action_target_value()))  # GVariant -> str -> int
+        for i, led in enumerate(leds):
+            if int(iled) == i:
+                menu_item = self._builder.get_object(
+                    'menu_led_{}_mode_{}'.format(defs.LED_NAMES[i], led.mode))
+                menu_item.set_active(True)
 
+    def on_led_mode(self, item, *args, **kwargs):
+        leds = self._device.get_leds()
+        # GVariant -> str -> int -> str
+        iled, imode = '{:02d}'.format(int(str(item.get_action_target_value())))
+        for i, led in enumerate(leds):
+            if int(iled) == i:
+                self._device.set_led(
+                    defs.LED_NAMES[i],
+                    led.rgb,
+                    defs.LED_MODES[int(imode)],
+                    led.brightness)
+                self._device.save()
 
 def gtk3_main(device):
     # Handle pressing Ctr+C properly, ignored by default

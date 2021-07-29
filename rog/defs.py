@@ -116,22 +116,22 @@ ACTION_TYPE_MOUSE = 1
 EVDEV_PRESS = 1
 EVDEV_RELEASE = 0
 
-LEDS = (
+LED_NAMES = (
     'logo',
     'wheel',
     'bottom',
     'all',
 )
 
-LED_MODES = {
-    'default': 0,
-    'breath': 1,
-    'rainbow': 2,
-    'wave': 3,
-    'reactive': 4,
-    'flasher': 5,
-    'battery': 6,
-}
+LED_MODES = (
+    'default',
+    'breath',
+    'rainbow',
+    'wave',
+    'reactive',
+    'flasher',
+    'battery',
+)
 
 DPI_PRESET_COLORS = {
     1: 'red',

@@ -42,7 +42,7 @@ class LEDs(object):
         if isinstance(data, dict):  # load from json settings backup
             self._leds = [None] * len(tuple(data.keys()))
             for led, item in data.items():
-                self._leds[defs.LEDS.index(led)] = Color(
+                self._leds[defs.LED_NAMES.index(led)] = Color(
                     item['r'], item['g'], item['b'],
                     item['brightness'],
                     item['mode'])
@@ -50,10 +50,7 @@ class LEDs(object):
         else:  # load from device
             off = 4
             for i in range(self.count):
-                mode = 'default'
-                for k, v in defs.LED_MODES.items():
-                    if v == data[off]:
-                        mode = k
+                mode = defs.LED_MODES[data[off]]
                 off += 1
                 brightness = data[off]
                 off += 1
@@ -69,7 +66,7 @@ class LEDs(object):
         data = {}
 
         for i in range(self.count):
-            data[defs.LEDS[i]] = {
+            data[defs.LED_NAMES[i]] = {
                 'r': self._leds[i].r,
                 'g': self._leds[i].g,
                 'b': self._leds[i].b,
@@ -92,7 +89,7 @@ class LEDs(object):
         for i, led in enumerate(self._leds):
             lines.append('{i} {name} | {mode} | {color} | {brightness}'.format(**{
                 'i': str(i + 1).rjust(2),
-                'name': defs.LEDS[i].ljust(7),
+                'name': defs.LED_NAMES[i].ljust(7),
                 'mode': led.mode.ljust(7),
                 'color': led.hex,
                 'brightness': led.brightness,
