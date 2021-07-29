@@ -341,18 +341,78 @@ Author: Kyoken
       </object>
     </child>
     <child>
-      <object class="GtkCheckMenuItem" id="menu_autostart">
+      <object class="GtkMenuItem" id="menu_battery">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="label" translatable="yes">Autostart</property>
+        <property name="label" translatable="yes">Battery</property>
         <property name="use-underline">True</property>
-        <signal name="toggled" handler="on_autostart" swapped="yes"/>
+        <signal name="activate" handler="on_battery_choice" swapped="yes"/>
+        <child type="submenu">
+          <object class="GtkMenu">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkMenuItem" id="menu_charge">
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Charge level</property>
+                <property name="use-underline">True</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="menu_alert_0">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">0</property>
+                <property name="label" translatable="yes">Alert: disabled</property>
+                <property name="use-underline">True</property>
+                <property name="draw-as-radio">True</property>
+                <property name="group">menu_alert_25</property>
+                <signal name="activate" handler="on_alert" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="menu_alert_25">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">25</property>
+                <property name="label" translatable="yes">Alert: 25%</property>
+                <property name="use-underline">True</property>
+                <property name="draw-as-radio">True</property>
+                <property name="group">menu_alert_0</property>
+                <signal name="activate" handler="on_alert" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="menu_alert_50">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">50</property>
+                <property name="label" translatable="yes">Alert: 50%</property>
+                <property name="use-underline">True</property>
+                <property name="draw-as-radio">True</property>
+                <property name="group">menu_alert_0</property>
+                <signal name="activate" handler="on_alert" swapped="yes"/>
+              </object>
+            </child>
+          </object>
+        </child>
       </object>
     </child>
     <child>
       <object class="GtkSeparatorMenuItem" id="menu_quit_sep">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkCheckMenuItem" id="menu_autostart">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">Autostart</property>
+        <property name="use-underline">True</property>
+        <signal name="toggled" handler="on_autostart" swapped="yes"/>
       </object>
     </child>
     <child>

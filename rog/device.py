@@ -404,9 +404,10 @@ class Device(object, metaclass=DeviceMeta):
         request = [0] * 64
         request[0] = 0x12
         response = self.query(bytes(request))
-        ver1 = tuple(reversed((response[13], response[14], response[15])))
-        ver2 = tuple(reversed((response[4], response[5], response[6])))
-        return response[10] + 1, ver1, ver2
+        profile = response[10] + 1
+        ver1 = response[15], response[14], response[13]
+        ver2 = response[6], response[5], response[4]
+        return profile, ver1, ver2
 
     def set_profile(self, profile: int):
         """
@@ -559,8 +560,11 @@ class Device(object, metaclass=DeviceMeta):
         request[1] = 0x07
         response = self.query(bytes(request))
 
-        # alert level is untested
-        defs.SLEEP_TIME[response[4]], response[6] * 25
+        sleep = defs.SLEEP_TIME[response[4]]
+        alert = response[6] * 25  # alert level need mode testing
+        if alert > 50:
+            alert = 0
+        return sleep, alert
 
     def set_sleep_alert(self, t=0, l=0):
         """
@@ -778,13 +782,14 @@ class StrixCarry(Device):
     control_interface = 1
 
     def get_profile_version(self):
-        logger.debug('getting profile')
+        logger.debug('getting profile and firmware versions')
         request = [0] * 64
         request[0] = 0x12
         response = self.query(bytes(request))
-        ver1 = tuple(reversed((response[12], response[13], response[14])))
-        ver2 = tuple(reversed((response[4], response[5], response[6])))
-        return response[9] + 1, ver1, ver2
+        profile = response[9] + 1
+        ver1 = response[15], response[14], response[13]
+        ver2 = response[6], response[5], response[4]
+        return profile, ver1, ver2
 
 
 class StrixImpact(Device):
@@ -856,13 +861,15 @@ class KerisWireless(DoubleDPIMixin, BitmaskMixin, Device):
     dpis = 4
 
     def get_sleep_alert(self):
-        logger.debug('getting sleep timeout')
+        logger.debug('getting sleep timeout and battery alert level')
         request = [0] * 64
         request[0] = 0x12
         request[1] = 0x07
         response = self.query(bytes(request))
 
-        return defs.SLEEP_TIME[response[5]], response[6] * 25
+        sleep = defs.SLEEP_TIME[response[5]]
+        alert = response[6] * 25
+        return sleep, alert
 
 
 class KerisWirelessWired(KerisWireless):

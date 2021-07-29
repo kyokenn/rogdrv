@@ -263,6 +263,7 @@ Available commands:''')
 
         if args.rate:
             self._device.set_rate(args.rate or 1000)
+            self._device.save()
 
         dpi, rate, response, snapping = self._device.get_dpi_rate_response_snapping()
         print('Polling rate: {} Hz'.format(rate))
@@ -284,8 +285,8 @@ Available commands:''')
             print('Device is not wireless')
             return
 
-        timeout = None
-        level = None
+        timeout = 1
+        level = 25
 
         if args.timeout >= 0:
             timeout = args.timeout
@@ -293,8 +294,9 @@ Available commands:''')
         if args.level >= 0:
             level = args.level
 
-        if timeout is not None or level is not None:
-            self._device.set_sleep_alert(timeout or 1, level or 25)
+        if args.timeout >= 0 or args.level >= 0:
+            self._device.set_sleep_alert(timeout, level)
+            self._device.save()
 
         t, l = self._device.get_sleep_alert()
         print('Sleep: {}'.format('{} min.'.format(t) if t else 'disabled'))

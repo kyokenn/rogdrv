@@ -103,8 +103,8 @@ class EventHandler(object):
                 menu_item.set_visible(False)
 
         if not self._device.wireless:
-            menu_item = self._builder.get_object('menu_sleep')
-            menu_item.set_visible(False)
+            self._builder.get_object('menu_sleep').set_visible(False)
+            self._builder.get_object('menu_battery').set_visible(False)
 
     def on_quit(self, *args, **kwargs):
         Notify.uninit()
@@ -172,6 +172,7 @@ StartupNotify=false
                     'changing polling rate from {} to {}'
                     .format(rate_old, rate_new))
                 self._device.set_rate(rate_new)
+                self._device.save()
 
     def on_perf_choice(self, item, *args, **kwargs):
         _, _, _, snapping = self._device.get_dpi_rate_response_snapping()
@@ -192,6 +193,7 @@ StartupNotify=false
                 '{} angle snapping'
                 .format('enabling' if item.get_active() else 'disabling'))
             self._device.set_snapping(item.get_active())
+            self._device.save()
 
     def on_sleep_choice(self, item, *args, **kwargs):
         sleep, _ = self._device.get_sleep_alert()
@@ -210,6 +212,30 @@ StartupNotify=false
                     'changing sleep timeout from {} to {}'
                     .format(sleep_old, sleep_new))
                 self._device.set_sleep_alert(sleep_new, alert)
+                self._device.save()
+
+    def on_battery_choice(self, item, *args, **kwargs):
+        _, alert = self._device.get_sleep_alert()
+        logger.debug('current battery alert level is {}%'.format(alert))
+        for ialert in (0, 25, 50):
+            menu_item = self._builder.get_object('menu_alert_{}'.format(ialert))
+            if ialert == alert:
+                menu_item.set_active(True)
+
+        menu_item = self._builder.get_object('menu_charge')
+        menu_item.set_label('Charge level: ?%')  # TODO: implement
+
+    def on_alert(self, item, *args, **kwargs):
+        if item.get_active():
+            sleep, alert_old = self._device.get_sleep_alert()
+            alert_new = int(str(item.get_action_target_value()))  # GVariant -> str -> int
+            if alert_old != alert_new:
+                logger.debug(
+                    'changing battery alert level from {}% to {}%'
+                    .format(alert_old, alert_new))
+                self._device.set_sleep_alert(sleep, alert_new)
+                self._device.save()
+
 
 def gtk3_main(device):
     # Handle pressing Ctr+C properly, ignored by default
