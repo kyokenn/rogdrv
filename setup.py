@@ -21,6 +21,7 @@ setup(
     },
     packages=[
         'rog',
+        'rog.device',
     ],
     data_files=[
         ['share/applications', ['rogdrv.desktop']],

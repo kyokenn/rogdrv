@@ -15,43 +15,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 import json
-import logging
 import struct
 
-from evdev import uinput, ecodes
 
-from . import defs, hid, logger
-from .bindings import Bindings, get_action_type
-from .colors import Colors
-
-
-class EventHandler(object):
-    def __init__(self):
-        self._uinput = uinput.UInput()
-        self._last_pressed = set()
-
-    def handle_event(self, pressed):
-        """
-        Handle event. Generates regular evdev/uinput events.
-        """
-        # release buttons
-        released = self._last_pressed - pressed
-        for code in released:
-            self._uinput.write(ecodes.EV_KEY, code, defs.EVDEV_RELEASE)
-        self._last_pressed -= released
-
-        # press buttons
-        new_pressed = pressed - self._last_pressed
-        for code in new_pressed:
-            self._uinput.write(ecodes.EV_KEY, code, defs.EVDEV_PRESS)
-        self._last_pressed |= new_pressed
-
-        # sync
-        if released or new_pressed:
-            self._uinput.syn()
-
-    def close(self):
-        self._uinput.close()
+from .. import defs, hid, logger
+from ..bindings import Bindings, get_action_type
+from ..leds import LEDs
 
 
 class DeviceNotFound(Exception):
@@ -329,7 +298,7 @@ class Device(object, metaclass=DeviceMeta):
 
         self.query(bytes(request))
 
-    def get_colors(self):
+    def get_leds(self):
         """
         Get LED colors.
 
@@ -343,11 +312,11 @@ class Device(object, metaclass=DeviceMeta):
         request[1] = 0x03
         response = self.query(bytes(request))
 
-        colors = Colors(self.leds)
-        colors.load(response)
-        return colors
+        leds = LEDs(self.leds)
+        leds.load(response)
+        return leds
 
-    def set_colors(self, colors: Colors):
+    def set_leds(self, leds: LEDs):
         """
         Set LED colors.
 
@@ -356,14 +325,14 @@ class Device(object, metaclass=DeviceMeta):
         """
         logger.debug('setting LED colors')
 
-        for i, color in enumerate(iter(colors)):
-            self.set_color(defs.LEDS[i], color.rgb, color.mode, color.brightness)
+        for i, led in enumerate(iter(leds)):
+            self.set_color(defs.LEDS[i], led.rgb, led.mode, led.brightness)
 
-    def set_color(self, led: str, color: tuple, mode: str = 'default', brightness: int = 4):
+    def set_led(self, name: str, color: tuple, mode: str = 'default', brightness: int = 4):
         """
         Set LED color.
 
-        :param led: led name (logo, wheel, bottom, all)
+        :param name: led name (logo, wheel, bottom, all)
         :type: str
 
         :param color: color as tuple (r, g, b)
@@ -385,7 +354,7 @@ class Device(object, metaclass=DeviceMeta):
         request = [0] * 64
         request[0] = 0x51
         request[1] = 0x28
-        request[2] = defs.LED_NAMES[name]
+        request[2] = defs.LEDS.index(name)
         request[4] = defs.LED_MODES[mode]
         request[5] = brightness
         request[6] = color[0]  # r
@@ -547,11 +516,11 @@ class Device(object, metaclass=DeviceMeta):
         request[4] = 1 if enabled else 0
         self.query(bytes(request))
 
-    def get_sleep_alert(self):
+    def get_sleep_charge_alert(self):
         """
-        Get current sleep timeout and battery alert level.
+        Get current sleep timeout, battery charge and alert level.
 
-        :returns: sleep timeout in minutes, battery alert level in %
+        :returns: sleep timeout in minutes, battery charge level in %, battery alert level in %
         :rtype: tuple
         """
         logger.debug('getting sleep timeout and battery alert level')
@@ -561,10 +530,11 @@ class Device(object, metaclass=DeviceMeta):
         response = self.query(bytes(request))
 
         sleep = defs.SLEEP_TIME[response[4]]
-        alert = response[6] * 25  # alert level need mode testing
+        charge = response[6] * 25
+        alert = response[5] * 25  # alert level need mode testing
         if alert > 50:
             alert = 0
-        return sleep, alert
+        return sleep, charge, alert
 
     def set_sleep_alert(self, t=0, l=0):
         """
@@ -607,10 +577,10 @@ class Device(object, metaclass=DeviceMeta):
             }
 
             if self.leds:
-                profile_data['colors'] = self.get_colors().export()
+                profile_data['colors'] = self.get_leds().export()
 
             if self.wireless:
-                profile_data['sleep'], profile_data['alert'] = self.get_sleep_alert()
+                profile_data['sleep'], _, profile_data['alert'] = self.get_sleep_charge_alert()
 
             data['profiles'][str(profile)] = profile_data
 
@@ -646,10 +616,10 @@ class Device(object, metaclass=DeviceMeta):
             if 'snapping' in profile_data:
                 self.set_snapping(profile_data['snapping'])
 
-            if 'colors' in profile_data:
-                colors = Colors(self.leds)
-                colors.load(profile_data['colors'])
-                self.set_colors(colors)
+            if 'leds' in profile_data:
+                leds = LEDs(self.leds)
+                leds.load(profile_data['leds'])
+                self.set_leds(leds)
 
             if 'sleep' in profile_data:
                 self.set_sleep(profile_data['sleep'])
@@ -657,223 +627,3 @@ class Device(object, metaclass=DeviceMeta):
             self.save()
 
         self.set_profile(saved_profile)
-
-
-class DoubleDPIMixin(object):
-    """
-    Mixin for devices which reports double DPI values.
-    """
-    def get_dpi_rate_response_snapping(self):
-        dpis, rate, bresponse, snapping = super().get_dpi_rate_response_snapping()
-        return ([dpi * 2 for dpi in dpis], rate, bresponse, snapping)
-
-    def set_dpi(self, dpi: int, preset=1):
-        super().set_dpi(dpi / 2, preset=preset)
-
-
-class BitmaskMixin(object):
-    """
-    Mixin for devices with bitmask-encoded keyboard events.
-    """
-    def next_event(self):
-        pressed = set()
-
-        try:
-            data = self._kbd.read(256)
-        except (OSError, IOError) as e:
-            logger.debug(e)
-            return pressed
-
-        logger.debug('< ' + ' '.join('{:02X}'.format(i) for i in data))
-
-        # python's struct doesn't have 16-byte numbers,
-        # so we have to use two 8-byte unsigned long long numbers
-        # also we have to add zero padding from 15 to 16 bytes length
-        low, high = struct.unpack('<QQ', bytes(data[2:2+15] + [0]))
-        bitmask = low | (high << (8 * 8))
-        bitmask_s = '{:0128b}'.format(bitmask)
-        logger.debug('got bitmask {}'.format(bitmask_s))
-
-        if bitmask:
-            for i, c in enumerate(reversed(bitmask_s)):  # from low bit to high
-                if c == '1':
-                    evdev_name = defs.ACTIONS_KEYBOARD.get(i)
-                    if evdev_name and evdev_name != 'UNDEFINED':
-                        pressed.add(getattr(ecodes, evdev_name))
-
-        return pressed
-
-
-class Gladius2(Device):
-    """
-    ROG Gladius II.
-    """
-    product_id = 0x1845
-    profiles = 3
-    buttons = 8  # could be 9 buttons? does the "DPI Target Button" counts?
-    buttons_mapping = {
-        1: 1,
-        2: 2,
-        3: 3,
-        4: 8,
-        5: 9,
-        6: 6,
-        7: 4,
-        8: 5,
-    }
-    leds = 3
-
-
-class Gladius2Origin(DoubleDPIMixin, Gladius2):
-    """
-    ROG Gladius II Origin (8 buttons) - wired version, 12k DPI.
-    Gladius II without DPI Dedicated Target Button.
-    """
-    product_id = 0x1877
-    buttons = 8
-
-
-class Gladius2OriginPink(Gladius2Origin):
-    """
-    ROG Gladius II Origin PNK LTD (8 buttons) - wired version, 12k DPI.
-    """
-    product_id = 0x18CD
-
-
-class Pugio(Device):
-    """
-    Gladius II based 10 buttons device.
-    """
-    product_id = 0x1846
-    profiles = 3
-    buttons = 10
-    buttons_mapping = {
-        1: 1,
-        2: 2,
-        3: 3,
-        4: 8,
-        5: 9,
-        6: 6,
-        7: 4,
-        8: 5,
-        9: 10,
-        10: 11,
-    }
-    leds = 3
-
-
-class PugioGladiusII(Pugio):
-    """
-    Pugio booted as Gladius II during firmware upgrade.
-    Can be rebooted back by replugging USB cable.
-    """
-    product_id = 0x1851
-
-
-class StrixCarry(Device):
-    """
-    Wireless only device without any LEDs.
-    """
-    product_id = 0x18B4
-    profiles = 3
-    buttons = 8
-    wireless = True
-    keyboard_interface = 2
-    control_interface = 1
-
-    def get_profile_version(self):
-        logger.debug('getting profile and firmware versions')
-        request = [0] * 64
-        request[0] = 0x12
-        response = self.query(bytes(request))
-        profile = response[9] + 1
-        ver1 = response[15], response[14], response[13]
-        ver2 = response[6], response[5], response[4]
-        return profile, ver1, ver2
-
-
-class StrixImpact(Device):
-    product_id = 0x1847
-    buttons = 6
-    leds = 1
-    profiles = 0
-
-
-class StrixImpactII(Device):
-    product_id = 0x1947
-    keyboard_interface = 2
-    control_interface = 0
-    profiles = 3
-    buttons = 8
-    dpis = 4
-    leds = 3
-
-
-class StrixImpactIIWireless(StrixImpactII):
-    product_id = 0x1949
-    wireless = True
-
-
-class StrixEvolve(Device):
-    product_id = 0x185B
-    profiles = 3
-    buttons = 8
-    leds = 1
-
-
-class Spatha(Device):
-    """
-    Spatha on cord.
-    """
-    product_id = 0x181C
-    profiles = 3
-    # profiles = 6  # unsupported
-    buttons = 10
-    # buttons = 14  # unsupported
-    leds = 3
-
-
-class SpathaWireless(Spatha):
-    """
-    Spatha in wireless mode.
-    """
-    product_id = 0x1824
-    wireless = True
-
-
-class Buzzard(Device):
-    product_id = 0x1816
-    profiles = 3
-    buttons = 10
-
-
-class KerisWireless(DoubleDPIMixin, BitmaskMixin, Device):
-    """
-    Keris Wireless in wireless mode.
-    """
-    product_id = 0x1960
-    profiles = 3
-    buttons = 8
-    leds = 2
-    keyboard_interface = 2
-    control_interface = 0
-    wireless = True
-    dpis = 4
-
-    def get_sleep_alert(self):
-        logger.debug('getting sleep timeout and battery alert level')
-        request = [0] * 64
-        request[0] = 0x12
-        request[1] = 0x07
-        response = self.query(bytes(request))
-
-        sleep = defs.SLEEP_TIME[response[5]]
-        alert = response[6] * 25
-        return sleep, alert
-
-
-class KerisWirelessWired(KerisWireless):
-    """
-    Keris Wireless in wired mode.
-    """
-    product_id = 0x195E
