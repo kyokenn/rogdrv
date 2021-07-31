@@ -138,7 +138,7 @@ class Device(object, metaclass=DeviceMeta):
 
         try:
             data = self._kbd.read(256)
-        except (OSError, IOError) as e:
+        except (OSError, IOError, ValueError) as e:
             logger.debug(e)
             return pressed
 

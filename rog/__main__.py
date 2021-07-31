@@ -88,6 +88,7 @@ class ROGDRVConfig(object):
 
         if not cmd.startswith('_'):
             if hasattr(self, cmd):
+                sys.argv[0] += ' ' + cmd
                 method = getattr(self, cmd)
                 method()
                 return

@@ -307,15 +307,40 @@ StartupNotify=false
     def on_led_mode(self, item, *args, **kwargs):
         leds = self._device.get_leds()
         # GVariant -> str -> int -> str
-        iled, imode = '{:02d}'.format(int(str(item.get_action_target_value())))
+        led_id, mode = '{:02d}'.format(int(str(item.get_action_target_value())))
         for i, led in enumerate(leds):
-            if int(iled) == i:
+            if int(led_id) == i:
                 self._device.set_led(
                     defs.LED_NAMES[i],
                     led.rgb,
-                    defs.LED_MODES[int(imode)],
+                    defs.LED_MODES[int(mode)],
                     led.brightness)
                 self._device.save()
+
+    def on_led_brightness_choice(self, item, *args, **kwargs):
+        leds = self._device.get_leds()
+        led_id = int(str(item.get_action_target_value()))  # GVariant -> str -> int
+        for i, led in enumerate(leds):
+            if int(led_id) == i:
+                menu_item = self._builder.get_object(
+                    'menu_led_{}_brightness_{}'
+                    .format(defs.LED_NAMES[i], led.brightness * 25))
+                menu_item.set_active(True)
+
+    def on_led_brightness(self, item, *args, **kwargs):
+        leds = self._device.get_leds()
+        # GVariant -> str -> int -> str
+        s = '{:04d}'.format(int(str(item.get_action_target_value())))
+        led_id = int(s[0])
+        brightness = int(s[1:])
+        for i, led in enumerate(leds):
+            if led_id == i:
+                self._device.set_led(
+                    defs.LED_NAMES[i],
+                    led.rgb, led.mode,
+                    brightness // 25)
+                self._device.save()
+
 
 def gtk3_main(device):
     # Handle pressing Ctr+C properly, ignored by default
