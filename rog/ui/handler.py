@@ -1,4 +1,4 @@
-# Copyright (C) 2018 Kyoken, kyoken@kyoken.ninja
+# Copyright (C) 2021 Kyoken, kyoken@kyoken.ninja
 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -14,77 +14,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-import gi
 import os
 import signal
 
-gi.require_version('Gtk', '3.0')
-gi.require_version('Notify', '0.7')
-
-from gi.repository import Gtk
-from gi.repository import Notify
-
-from . import defs, logger
-
-APPID = 'rogdrv'
-
-
-def find_icons():
-    for location in (
-            os.path.abspath(os.path.dirname(__file__)),
-            '/usr/share/pixmaps',
-            '/usr/local/share/pixmaps'):
-        for icon in ('rog-symbolic.symbolic.png', 'rog.png'):
-            path = os.path.join(location, icon)
-            if os.path.exists(path):
-                yield path
-
-    icon_theme = Gtk.IconTheme.get_default()
-    for icon_name in ('input-mouse-symbolic', 'input-mouse'):
-        for res in (16, 24, 32):
-            icon = icon_theme.lookup_icon(icon_name, res, 0)
-            if icon is not None:
-                yield icon.get_filename()
-
-
-def get_autostart_path():
-    xdg_home = os.environ.get('XDG_CONFIG_HOME')
-    if xdg_home and os.path.isdir(xdg_home):
-        home = xdg_home
-    else:
-        home = os.path.expanduser('~')
-
-    return os.path.join(home, '.config', 'autostart', 'rogdrv.desktop')
-
-
-class TrayMenu(object):
-    """
-    Tray icon menu.
-    """
-    def __init__(self, icon_path, menu):
-        self._menu = menu
-
-        APPIND_SUPPORT = True
-        try:
-            from gi.repository import AppIndicator3
-        except Exception as e:
-            APPIND_SUPPORT = False
-
-        if APPIND_SUPPORT:
-            self._icon = AppIndicator3.Indicator.new(
-                APPID, icon_path,
-                AppIndicator3.IndicatorCategory.APPLICATION_STATUS)
-            self._icon.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
-            self._icon.set_menu(self._menu)
-        else:
-            self._icon = Gtk.StatusIcon()
-            self._icon.set_from_file(icon_path)
-            self._icon.connect('popup-menu', self.on_popup_menu)
-
-    def on_popup_menu(self, icon, button, time):
-        self._menu.popup(
-            None, None, Gtk.StatusIcon.position_menu,
-            icon, button, time)
+from . import Gtk, Notify
+from .utils import get_autostart_path
+from .. import defs, logger
 
 
 class TrayMenuEventHandler(object):
@@ -340,31 +275,3 @@ StartupNotify=false
                     led.rgb, led.mode,
                     brightness // 25)
                 self._device.save()
-
-
-def gtk3_main(device):
-    # Handle pressing Ctr+C properly, ignored by default
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-    # generate UI
-    builder = Gtk.Builder()
-    builder.add_from_file(os.path.join(
-        os.path.abspath(os.path.dirname(__file__)),
-        'gtk3.glade'))
-
-    # check autostart status
-    autostart = builder.get_object('menu_autostart')
-    autostart.set_active(os.path.exists(get_autostart_path()))
-
-    # disable profiles if unsupported
-    if not device.profiles:
-        profile = builder.get_object('menu_profile')
-        profile.set_visible(False)
-
-    # bind events
-    builder.connect_signals(TrayMenuEventHandler(builder, device))
-
-    # create tray icon
-    trayicon = TrayMenu(next(find_icons()), builder.get_object('menu'))
-    Notify.init(APPID)
-    Gtk.main()

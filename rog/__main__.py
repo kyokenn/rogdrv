@@ -389,7 +389,7 @@ def rogdrv():
     else:
         app.start()
 
-        from .gtk3 import gtk3_main
+        from .ui import gtk3_main
         gtk3_main(app.device)
         app.device.close()
         app.handler.close()

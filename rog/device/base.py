@@ -1,4 +1,4 @@
-# Copyright (C) 2018 Kyoken, kyoken@kyoken.ninja
+# Copyright (C) 2021 Kyoken, kyoken@kyoken.ninja
 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -16,7 +16,6 @@
 
 import json
 import struct
-
 
 from .. import defs, hid, logger
 from ..bindings import Bindings, get_action_type

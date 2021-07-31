@@ -1,1 +1,1 @@
-include rog/rog.png rog/rog-symbolic.symbolic.png rog/gtk3.glade
+include rog/ui/rog.png rog/ui/rog-symbolic.symbolic.png rog/ui/gtk3.glade
