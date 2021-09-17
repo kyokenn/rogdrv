@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from rog.device import DeviceMeta
+from rog.device.base import DeviceMeta
 
 UDEV_RULES = '/etc/udev/rules.d/50-rogdrv.rules'
 
