@@ -17,6 +17,7 @@
 import json
 import struct
 
+from evdev import ecodes
 from .. import defs, hid, logger
 from ..bindings import Bindings, get_action_type
 from ..leds import LEDs

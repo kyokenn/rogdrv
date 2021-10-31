@@ -1,5 +1,6 @@
-from evdev import uinput, ecodes
-
+from evdev import uinput, ecodes, _ecodes
+from inspect import getmembers
+from . import defs
 
 class DeviceEventHandler(object):
     """
@@ -7,7 +8,18 @@ class DeviceEventHandler(object):
     Converts mouse events to evdev/uinput events.
     """
     def __init__(self):
-        self._uinput = uinput.UInput()
+        # TODO: change codes[val] = val to something correct in Python...
+        codes = {}
+        for code, val in getmembers(_ecodes):
+            if code.startswith("KEY"):
+                if (val >= ecodes.ecodes['KEY_ESC'] and val <= ecodes.ecodes['KEY_MEDIA']) or val == ecodes.ecodes['KEY_FN']:
+                    codes[val] = val
+            elif code.startswith("BTN"):
+                if (val >= ecodes.ecodes['BTN_LEFT'] and val <= ecodes.ecodes['BTN_TASK']):
+                    codes[val] = val
+
+        event = {ecodes.EV_KEY: codes.keys()}
+        self._uinput = uinput.UInput(events=event)
         self._last_pressed = set()
 
     def handle_event(self, pressed: set):
