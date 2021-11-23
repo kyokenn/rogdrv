@@ -115,8 +115,12 @@ class StrixImpact(Device):
     profiles = 0
 
 
-class StrixImpactII(Device):
+class StrixImpactIIWirelessWired(Device):
+    """
+    Strix Impact II WIreless with wire connected
+    """
     product_id = 0x1947
+    wireless = True
     keyboard_interface = 2
     control_interface = 0
     profiles = 3
@@ -125,9 +129,11 @@ class StrixImpactII(Device):
     leds = 3
 
 
-class StrixImpactIIWireless(StrixImpactII):
+class StrixImpactIIWireless(StrixImpactIIWirelessWired):
+    """
+    Strix Impact II Wireless in wireless mode
+    """
     product_id = 0x1949
-    wireless = True
 
 
 class StrixEvolve(Device):
