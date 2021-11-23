@@ -136,33 +136,6 @@ class StrixImpactIIWireless(StrixImpactIIWirelessWired):
     product_id = 0x1949
 
 
-class StrixEvolve(Device):
-    product_id = 0x185B
-    profiles = 3
-    buttons = 8
-    leds = 1
-
-
-class Spatha(Device):
-    """
-    Spatha on cord.
-    """
-    product_id = 0x181C
-    profiles = 3
-    # profiles = 6  # unsupported
-    buttons = 10
-    # buttons = 14  # unsupported
-    leds = 3
-
-
-class SpathaWireless(Spatha):
-    """
-    Spatha in wireless mode.
-    """
-    product_id = 0x1824
-    wireless = True
-
-
 class Buzzard(Device):
     product_id = 0x1816
     profiles = 3

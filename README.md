@@ -1,10 +1,10 @@
 rogdrv
 ======
 
-rogdrv is a simple ASUS ROG (Republic of Gamers) userspace mouse driver for Linux.
-The mouse is a composite device which consists of 2 devices: mouse, keyboard and consumer control
-for changing mouse settings.
-The keyboard part is unsupported on Linux, but it's recognised as HID device.
+**rogdrv** is a simple ASUS ROG (Republic of Gamers) userspace mouse driver for Linux.
+The mouse is a composite device which consists of 3 devices/interfaces:
+mouse, keyboard and consumer control for changing the mouse settings.
+The keyboard interface is unsupported on Linux, but it's recognised as HID device.
 So this driver maps HID events to the generic keyboard events.
 
 The protocol was reverse-engineered, so everything is experimental. Use at your own risk.
@@ -14,17 +14,15 @@ Supported devices and features
 
 Device name                   | Profiles | Button Bindings | Performance Settings | LEDs | Sleep
 ------------------------------|----------|-----------------|----------------------|------|-------
+**Buzzard**                   | +        | ?               | ?                    | ?    | N/A
 **Gladius II**                | +        | +               | +                    | +    | N/A
 **Gladius II Origin**         | +        | +               | +                    | +    | N/A
 **Gladius II Origin PNK LTD** | +        | +               | +                    | +    | N/A
+**Keris Wireless**            | +        | +               | +                    | +    | +
 **Pugio**                     | +        | +               | +                    | +    | N/A
 **Strix Carry**               | +        | +               | +                    | N/A  | +
-**Keris Wireless**            | +        | +               | +                    | +    | +
-**Strix Impact**              | N/A      | ?               | ?                    | +    | N/A
 **Strix Impact II Wireless**  | +        | +               | +                    | +    | ?
-**Strix Evolve**              | ?        | ?               | ?                    | ?    | N/A
-**Buzzard**                   | +        | ?               | ?                    | ?    | N/A
-**Spatha**                    | +        | ?               | ?                    | ?    | ?
+**Strix Impact**              | N/A      | ?               | ?                    | +    | N/A
 
 * **Profiles** - Profile switching feature
 * **Button Bindings** - Buttons binding feature
@@ -34,6 +32,25 @@ Device name                   | Profiles | Button Bindings | Performance Setting
 
 There is a chance that a driver can be compatible with other mouse devices
 from ASUS ROG (Republic of Gamers) series.
+
+Unsupported devices
+-------------------
+
+Those devices are from the same generation and they are based on the same ASUS hardware which
+is not compatible with **hid-generic** linux driver.
+
+You can check it with:
+```
+LIBUSB_DEBUG=9 sudo -E lsusb -v -d 0b05:<mouse product ID>
+```
+
+There would be no **Consumer Control** interface in the device descriptor
+which means they are not compatible.
+It would report only **Mouse** and **Keyboard** interfaces.
+
+* Spatha
+* Gladius
+* Strix Evolve
 
 Requirements
 ------------
