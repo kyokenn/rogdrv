@@ -50,6 +50,7 @@ class CythonSubDevice(SubDevice):
     def open(self):
         import hid
         self._device = hid.device()
+        logger.debug('opening device "{}"'.format(self['path'].decode()))
         self._device.open_path(self['path'])
 
     def __getitem__(self, name):
@@ -63,6 +64,7 @@ class CFFISubDevice(SubDevice):
     """
     def open(self):
         import hidapi
+        logger.debug('opening device "{}"'.format(self['path'].decode()))
         self._device = hidapi.Device(path=self['path'])
 
     def __getitem__(self, name):
@@ -76,6 +78,7 @@ class PyHIDAPISubDevice(SubDevice):
     """
     def open(self):
         import hid
+        logger.debug('opening device "{}"'.format(self['path'].decode()))
         self._device = hid.Device(path=self['path'])
 
     def __getitem__(self, name):
@@ -86,10 +89,12 @@ def list_devices(vendor_id, product_id):
     try:
         import hidapi
 
-        logger.debug('getting list of devices using "hidapi-cffi"')
         subdevices = []
+
+        logger.debug('getting list of devices using "hidapi-cffi"')
         for info in hidapi.enumerate(vendor_id, product_id):
             subdevices.append(CFFISubDevice(info))
+
         return subdevices
 
     except ImportError as e:
@@ -115,4 +120,6 @@ def list_devices(vendor_id, product_id):
     except ImportError as e:
         pass
 
-    return []
+    raise RuntimeError(
+        'HID API not found, please install '
+        '"hidapi-cffi" or "cython-hidapi" or "pyhidapi"')

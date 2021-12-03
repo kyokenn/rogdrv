@@ -74,7 +74,7 @@ class ROGDRVConfig(object):
         self._device = None
 
     def run(self):
-        if len(sys.argv) < 2:
+        if len(sys.argv) < 2 or sys.argv[1] in ('-h', '--help'):
             self._help()
             return
 

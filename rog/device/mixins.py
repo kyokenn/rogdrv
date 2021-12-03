@@ -16,6 +16,8 @@
 
 import struct
 
+from evdev import ecodes
+
 from .. import defs, logger
 
 
@@ -56,6 +58,7 @@ class BitmaskMixin(object):
 
         bitmask_s = '{:0128b}'.format(bitmask)
         logger.debug('got bitmask {}'.format(bitmask_s))
+        logger.debug('got bitmask {:032X}'.format(bitmask))
 
         if bitmask:
             for i, bit in enumerate(reversed(bitmask_s)):  # from low bit to high
