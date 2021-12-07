@@ -332,8 +332,8 @@ Available commands:''')
             help='Response in ms: 4, 8, 12, 16, 20, 24, 28, 32')
         args = parser.parse_args()
 
-        if args.response >= 0:
-            self._device.set_snapping(bool(args.response))
+        if args.response:
+            self._device.set_response(args.response)
             self._device.save()
 
         dpis, rate, response, snapping = self._device.get_dpi_rate_response_snapping()
