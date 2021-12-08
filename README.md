@@ -19,6 +19,7 @@ Device name                   | Profiles | Button Bindings | Performance Setting
 **Gladius II Origin**         | +        | +               | +                    | +    | N/A
 **Gladius II Origin PNK LTD** | +        | +               | +                    | +    | N/A
 **Keris Wireless**            | +        | +               | +                    | +    | +
+**Chakram**                   | +        | ?               | +                    | +    | +
 **Pugio**                     | +        | +               | +                    | +    | N/A
 **Strix Carry**               | +        | +               | +                    | N/A  | +
 **Strix Impact II Wireless**  | +        | +               | +                    | +    | ?
