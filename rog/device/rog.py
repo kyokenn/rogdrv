@@ -175,7 +175,7 @@ class KerisWirelessWired(KerisWireless):
     product_id = 0x195E
 
 
-class ChakramWireless(DoubleDPIMixin, BitmaskMixin, Device):
+class ChakramWireless(BitmaskMixin, Device):
     """
     Chakram Wireless in wireless mode.
     """
