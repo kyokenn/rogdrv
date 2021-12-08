@@ -173,3 +173,46 @@ class KerisWirelessWired(KerisWireless):
     Keris Wireless in wired mode.
     """
     product_id = 0x195E
+
+
+class ChakramWireless(DoubleDPIMixin, BitmaskMixin, Device):
+    """
+    Chakram Wireless in wireless mode.
+    """
+    product_id = 0x18E5
+    profiles = 3
+    buttons = 5
+    leds = 3
+    keyboard_interface = 2
+    control_interface = 0
+    wireless = True
+    dpis = 4
+
+    def get_sleep_charge_alert(self):
+        logger.debug('getting sleep timeout, battery charge and alert level')
+        request = [0] * 64
+        request[0] = 0x12
+        request[1] = 0x07
+        response = self.query(bytes(request))
+
+        charge = response[4] * 25
+        sleep = defs.SLEEP_TIME[response[5]]
+        alert = response[6] * 25
+        return sleep, charge, alert
+
+    def get_profile_version(self):
+        logger.debug('getting profile and firmware versions')
+        request = [0] * 64
+        request[0] = 0x12
+        response = self.query(bytes(request))
+        profile = response[9] + 1
+        ver1 = response[15], response[14], response[13]
+        ver2 = response[6], response[5], response[4]
+        return profile, ver1, ver2
+
+
+class ChakramWirelessWired(ChakramWireless):
+    """
+    Chakram Wireless in wired mode.
+    """
+    product_id = 0x18E3
