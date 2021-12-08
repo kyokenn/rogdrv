@@ -1,9 +1,16 @@
-*.pp
 *.8
+*.cmd
 *.egg-info
+*.ko
+*.mod
+*.mod.c
+*.o
+*.order
+*.pp
 *.pyc
 *.rpm
 *.src.rpm
+*.symvers
 /build/
 /dist/
 /selinux/tmp/
