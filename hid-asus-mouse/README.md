@@ -1,17 +1,41 @@
 hid-asus-mouse
-==========
+==============
 
-ASUS ROG & TUF mouse driver as Linux kernel module.
+HID driver for ASUS ROG & TUF mice
+providing generation of keyboard events.
 
-This driver is work in progress. It’s unfinished and may crash your system.
 
-Status
-------
+Device compatibility
+--------------------
 
-* Loading driver and attaching to HID device - **DONE**
-* Parse events for the gen2 (array) and gen3 (bitmask) mice - **DONE**
-* Print parsed keyboard event from event mapping to __dmesg__ - **DONE**
-* Generate keyboard events - **DONE**
+**Generation 1 devices with broken HID descriptors**
+
+Those devices needs some HID descriptor fixes, so patches are welcome.
+
+You can’t change mouse settings without descriptor fixes but keyboard events should work.
+
+* Gladius
+* Spatha
+* Strix Evolve
+
+**Generation 1 devices with good HID descriptors**
+
+* Buzzard
+* Gladius II
+* Gladius II Origin
+* Gladius II Origin PNK LTD
+* Pugio
+* Strix Carry
+* Strix Impact
+* Strix Impact II Wireless
+
+**Generation 2 devices**
+
+You don’t need any driver for those devices.
+It was made as a reference for testing and debugging purposes.
+
+* Chakram
+* Keris Wireless
 
 
 Building

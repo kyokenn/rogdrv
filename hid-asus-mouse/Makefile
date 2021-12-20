@@ -1,19 +1,10 @@
-obj-m = hid-asus-mouse.o
-
-ARGS=-C /lib/modules/$(shell uname -r)/build/ M=$(PWD)
+obj-m += hid-asus-mouse-gen1.o
+# obj-m += hid-asus-mouse-gen2.o
+KERNEL_DIR ?= /lib/modules/$(shell uname -r)/build
 
 all:
-	make $(ARGS) modules
-
+	make -C $(KERNEL_DIR) M=$(shell pwd) modules
+install:
+	make -C $(KERNEL_DIR) M=$(shell pwd) modules_install
 clean:
-	make $(ARGS) clean
-
-load:
-	sudo insmod hid-asus-mouse.ko
-
-unload:
-	sudo rmmod hid-asus-mouse.ko
-
-reload:
-	sudo rmmod hid-asus-mouse.ko
-	sudo insmod hid-asus-mouse.ko
+	make -C $(KERNEL_DIR) M=$(shell pwd) clean
