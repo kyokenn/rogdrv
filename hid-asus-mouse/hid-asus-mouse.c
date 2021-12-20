@@ -24,11 +24,13 @@
 #define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_SPATHA_RF 0x1824
 #define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_SPATHA_USB 0x181C
 
-#define ASUS_MOUSE_DEBUG 1
-
-#define ASUS_MOUSE_DATA_KEY_STATE_SIZE 4
+/* #define ASUS_MOUSE_DEBUG 1 */
+#define ASUS_MOUSE_GEN2_EVENT_SIZE 9
+#define ASUS_MOUSE_GEN3_EVENT_SIZE 17
+#define ASUS_MOUSE_DATA_KEY_STATE_NUM 4
+#define ASUS_MOUSE_DATA_KEY_STATE_BITS 32
 struct asus_mouse_data {
-	__u32 key_state[ASUS_MOUSE_DATA_KEY_STATE_SIZE];
+	__u32 key_state[ASUS_MOUSE_DATA_KEY_STATE_NUM];
 	struct input_dev *input;
 };
 
@@ -148,7 +150,7 @@ static int asus_mouse_probe(struct hid_device *hdev, const struct hid_device_id 
 		return -ENOMEM;
 	}
 
-	for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_SIZE; i++)
+	for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_NUM; i++)
 		drv_data->key_state[i] = 0;
 	drv_data->input = NULL;
 	hid_set_drvdata(hdev, drv_data);
@@ -190,10 +192,52 @@ static void asus_mouse_remove(struct hid_device *hdev)
 	hid_hw_stop(hdev);
 }
 
+
+static void asus_mouse_parse_event(u8 *data, int size, u32 bitmask[])
+{
+	int i, bit, code, offset;
+	for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_NUM; i++)
+		bitmask[i] = 0;
+
+	// build bitmask from event data
+	if (size == ASUS_MOUSE_GEN2_EVENT_SIZE) {  // got array of active key codes
+#ifdef ASUS_MOUSE_DEBUG
+		printk(KERN_INFO "ASUS MOUSE: DATA %02X %02X %02X %02X %02X %02X %02X %02X %02X",
+			data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8]);
+#endif
+
+		for (offset = 3; offset < size; offset++) {
+			code = data[offset];
+			if (!code)
+				continue;
+			i = ASUS_MOUSE_DATA_KEY_STATE_NUM - (code / ASUS_MOUSE_DATA_KEY_STATE_BITS) - 1;
+			bitmask[i] |= 1 << (code % ASUS_MOUSE_DATA_KEY_STATE_BITS);
+		}
+	} else if (size == ASUS_MOUSE_GEN3_EVENT_SIZE) {  // got packed bitmask
+#ifdef ASUS_MOUSE_DEBUG
+		printk(KERN_INFO "ASUS MOUSE: DATA %02X %02X %02X %02X %02X %02X %02X %02X",
+			data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
+		printk(KERN_INFO "ASUS MOUSE: DATA %02X %02X %02X %02X %02X %02X %02X %02X %02X",
+			data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15], data[16]);
+#endif
+
+		offset = size - 1;
+		for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_NUM; i++) {
+			bit = 0;
+			if (i == 0)  // first byte of 16-byte number is missing, so we skip it
+				bit = 8;
+			for (; bit < ASUS_MOUSE_DATA_KEY_STATE_BITS; bit += 8) {
+				bitmask[i] |= data[offset] << (ASUS_MOUSE_DATA_KEY_STATE_BITS - 8 - bit);
+				offset--;
+			}
+		}
+	}
+}
+
 static int asus_mouse_raw_event(struct hid_device *hdev, struct hid_report *report,
 		u8 *data, int size)
 {
-	int i, bit, offset, asus_code, key_code;
+	int i, bit, asus_code, key_code;
 	u32 bitmask[4], modified;
 	struct usb_interface *iface = to_usb_interface(hdev->dev.parent);
 	struct asus_mouse_data *drv_data = hid_get_drvdata(hdev);
@@ -205,50 +249,13 @@ static int asus_mouse_raw_event(struct hid_device *hdev, struct hid_report *repo
 	if (iface->cur_altsetting->desc.bInterfaceProtocol != 0)
 		return 0;
 
-	// build bitmask from event data
-	if (size == 9) {  // gen1 & gen2 mice - got array of active key codes
-#ifdef ASUS_MOUSE_DEBUG
-		printk(KERN_INFO "ASUS MOUSE: DATA %02X %02X %02X %02X %02X %02X %02X %02X %02X",
-			data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8]);
-#endif
-
-		if (data[0] != 0x01)  // validate packet
-			return 0;
-
-		for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_SIZE; i++)  // init/reset bitmasks
-			bitmask[i] = 0;
-
-		for (offset = 3; offset < size; offset++) {
-			bit = data[offset];
-			if (!bit)
-				continue;
-			bitmask[ASUS_MOUSE_DATA_KEY_STATE_SIZE - (bit / 32) - 1] |= 1 << (bit % 32);
-		}
-	} else if (size == 17) {  // gen3 mice - got packed bitmask
-#ifdef ASUS_MOUSE_DEBUG
-		printk(KERN_INFO "ASUS MOUSE: DATA %02X %02X %02X %02X %02X %02X %02X %02X",
-			data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
-		printk(KERN_INFO "ASUS MOUSE: DATA %02X %02X %02X %02X %02X %02X %02X %02X %02X",
-			data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15], data[16]);
-#endif
-
-		if (data[0] != 0x04)  // validate packet
-			return 0;
-
-		offset = size - 1;
-		for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_SIZE; i++) {
-			bitmask[i] = 0;
-			bit = 0;
-			if (i == 0)  // first byte of 16-byte number is missing, so we skip it
-				bit = 8;
-			for (; bit < 32; bit += 8) {
-				bitmask[i] |= data[offset] << (24 - bit);
-				offset--;
-			}
-		}
-	} else {
+	if (size == ASUS_MOUSE_GEN2_EVENT_SIZE && data[0] != 0x01)  // validate gen2 packet
 		return 0;
-	}
+
+	if (size == ASUS_MOUSE_GEN3_EVENT_SIZE && data[0] != 0x04)  // validate gen3 packet
+		return 0;
+
+	asus_mouse_parse_event(data, size, bitmask);
 
 #ifdef ASUS_MOUSE_DEBUG
 	printk(KERN_INFO "ASUS MOUSE: STAT %08X %08X %08X %08X",
@@ -258,14 +265,14 @@ static int asus_mouse_raw_event(struct hid_device *hdev, struct hid_report *repo
 #endif
 
 	// get key codes
-	for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_SIZE; i++) {
-		modified = drv_data->key_state[ASUS_MOUSE_DATA_KEY_STATE_SIZE - i - 1] ^
-			bitmask[ASUS_MOUSE_DATA_KEY_STATE_SIZE - i - 1];
-		for (bit = 0; bit < 32; bit += 1) {
+	for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_NUM; i++) {
+		modified = drv_data->key_state[ASUS_MOUSE_DATA_KEY_STATE_NUM - i - 1] ^
+			bitmask[ASUS_MOUSE_DATA_KEY_STATE_NUM - i - 1];
+		for (bit = 0; bit < ASUS_MOUSE_DATA_KEY_STATE_BITS; bit += 1) {
 			if (!(modified & (1 << bit)))
 				continue;
 
-			asus_code = i * 32 + bit;
+			asus_code = i * ASUS_MOUSE_DATA_KEY_STATE_BITS + bit;
 			if (asus_code >= ASUS_MOUSE_MAPPING_SIZE) {
 				hid_warn(hdev, "unmapped special key code 0x%02X: ignoring\n", asus_code);
 				return 0;
@@ -273,7 +280,7 @@ static int asus_mouse_raw_event(struct hid_device *hdev, struct hid_report *repo
 
 			key_code = asus_mouse_mapping[asus_code];
 
-			if (bitmask[ASUS_MOUSE_DATA_KEY_STATE_SIZE - i - 1] & (1 << bit)) {
+			if (bitmask[ASUS_MOUSE_DATA_KEY_STATE_NUM - i - 1] & (1 << bit)) {
 #ifdef ASUS_MOUSE_DEBUG
 				printk(KERN_INFO "ASUS MOUSE: PRES 0x%02X (%d) - 0x%02X (%d) '%c'", asus_code, asus_code, key_code, key_code, key_code);
 #endif
@@ -289,7 +296,7 @@ static int asus_mouse_raw_event(struct hid_device *hdev, struct hid_report *repo
 	}
 
 	// save current keys state for tracking released keys
-	for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_SIZE; i++)
+	for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_NUM; i++)
 		drv_data->key_state[i] = bitmask[i];
 
 	return 0;
