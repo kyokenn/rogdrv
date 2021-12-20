@@ -192,8 +192,7 @@ static void asus_mouse_remove(struct hid_device *hdev)
 	hid_hw_stop(hdev);
 }
 
-
-static void asus_mouse_parse_event(u8 *data, int size, u32 bitmask[])
+static void asus_mouse_parse_events(u32 bitmask[], u8 *data, int size)
 {
 	int i, bit, code, offset;
 	for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_NUM; i++)
@@ -234,13 +233,54 @@ static void asus_mouse_parse_event(u8 *data, int size, u32 bitmask[])
 	}
 }
 
+static void asus_mouse_send_events(u32 bitmask[], struct asus_mouse_data *drv_data)
+{
+	int i, bit, asus_code, key_code;
+	u32 modified;
+
+	// get key codes and send key events
+	for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_NUM; i++) {
+		modified = drv_data->key_state[ASUS_MOUSE_DATA_KEY_STATE_NUM - i - 1] ^
+			bitmask[ASUS_MOUSE_DATA_KEY_STATE_NUM - i - 1];
+		for (bit = 0; bit < ASUS_MOUSE_DATA_KEY_STATE_BITS; bit += 1) {
+			if (!(modified & (1 << bit)))
+				continue;
+
+			asus_code = i * ASUS_MOUSE_DATA_KEY_STATE_BITS + bit;
+			if (asus_code >= ASUS_MOUSE_MAPPING_SIZE) {
+				continue;
+			}
+
+			key_code = asus_mouse_mapping[asus_code];
+
+			if (bitmask[ASUS_MOUSE_DATA_KEY_STATE_NUM - i - 1] & (1 << bit)) {
+#ifdef ASUS_MOUSE_DEBUG
+				printk(KERN_INFO "ASUS MOUSE: PRES 0x%02X (%d) - 0x%02X (%d) '%c'",
+				       asus_code, asus_code, key_code, key_code, key_code);
+#endif
+				input_event(drv_data->input, EV_KEY, key_code, 1);
+			} else {
+#ifdef ASUS_MOUSE_DEBUG
+				printk(KERN_INFO "ASUS MOUSE: RELE 0x%02X (%d) - 0x%02X (%d) '%c'",
+				       asus_code, asus_code, key_code, key_code, key_code);
+#endif
+				input_event(drv_data->input, EV_KEY, key_code, 0);
+			}
+			input_sync(drv_data->input);
+		}
+	}
+
+	// save current keys state for tracking released keys
+	for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_NUM; i++)
+		drv_data->key_state[i] = bitmask[i];
+}
+
 static int asus_mouse_raw_event(struct hid_device *hdev, struct hid_report *report,
 		u8 *data, int size)
 {
-	int i, bit, asus_code, key_code;
-	u32 bitmask[4], modified;
 	struct usb_interface *iface = to_usb_interface(hdev->dev.parent);
 	struct asus_mouse_data *drv_data = hid_get_drvdata(hdev);
+	u32 bitmask[ASUS_MOUSE_DATA_KEY_STATE_NUM];
 
 	if (drv_data == NULL)
 		return 0;
@@ -255,7 +295,7 @@ static int asus_mouse_raw_event(struct hid_device *hdev, struct hid_report *repo
 	if (size == ASUS_MOUSE_GEN3_EVENT_SIZE && data[0] != 0x04)  // validate gen3 packet
 		return 0;
 
-	asus_mouse_parse_event(data, size, bitmask);
+	asus_mouse_parse_events(bitmask, data, size);
 
 #ifdef ASUS_MOUSE_DEBUG
 	printk(KERN_INFO "ASUS MOUSE: STAT %08X %08X %08X %08X",
@@ -264,40 +304,7 @@ static int asus_mouse_raw_event(struct hid_device *hdev, struct hid_report *repo
 		bitmask[0], bitmask[1], bitmask[2], bitmask[3]);
 #endif
 
-	// get key codes
-	for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_NUM; i++) {
-		modified = drv_data->key_state[ASUS_MOUSE_DATA_KEY_STATE_NUM - i - 1] ^
-			bitmask[ASUS_MOUSE_DATA_KEY_STATE_NUM - i - 1];
-		for (bit = 0; bit < ASUS_MOUSE_DATA_KEY_STATE_BITS; bit += 1) {
-			if (!(modified & (1 << bit)))
-				continue;
-
-			asus_code = i * ASUS_MOUSE_DATA_KEY_STATE_BITS + bit;
-			if (asus_code >= ASUS_MOUSE_MAPPING_SIZE) {
-				hid_warn(hdev, "unmapped special key code 0x%02X: ignoring\n", asus_code);
-				return 0;
-			}
-
-			key_code = asus_mouse_mapping[asus_code];
-
-			if (bitmask[ASUS_MOUSE_DATA_KEY_STATE_NUM - i - 1] & (1 << bit)) {
-#ifdef ASUS_MOUSE_DEBUG
-				printk(KERN_INFO "ASUS MOUSE: PRES 0x%02X (%d) - 0x%02X (%d) '%c'", asus_code, asus_code, key_code, key_code, key_code);
-#endif
-				input_event(drv_data->input, EV_KEY, key_code, 1);
-			} else {
-#ifdef ASUS_MOUSE_DEBUG
-				printk(KERN_INFO "ASUS MOUSE: RELE 0x%02X (%d) - 0x%02X (%d) '%c'", asus_code, asus_code, key_code, key_code, key_code);
-#endif
-				input_event(drv_data->input, EV_KEY, key_code, 0);
-			}
-			input_sync(drv_data->input);
-		}
-	}
-
-	// save current keys state for tracking released keys
-	for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_NUM; i++)
-		drv_data->key_state[i] = bitmask[i];
+	asus_mouse_send_events(bitmask, drv_data);
 
 	return 0;
 }
