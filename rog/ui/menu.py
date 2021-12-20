@@ -29,12 +29,24 @@ class TrayMenu(object):
     def __init__(self, appid, icon_path, menu):
         self._menu = menu
 
-        APP_INDICATOR_SUPPORT = True
-        try:
-            gi.require_version('AppIndicator3', '0.1')
-            from gi.repository import AppIndicator3
-        except Exception as e:
-            APP_INDICATOR_SUPPORT = False
+        APP_INDICATOR_SUPPORT = False
+
+        # just to make all tries look the same
+        if not APP_INDICATOR_SUPPORT:
+            try:
+                gi.require_version('AyatanaAppIndicator3', '0.1')
+                from gi.repository import AyatanaAppIndicator3 as AppIndicator3
+                APP_INDICATOR_SUPPORT = True
+            except:
+                pass
+
+        if not APP_INDICATOR_SUPPORT:
+            try:
+                gi.require_version('AppIndicator3', '0.1')
+                from gi.repository import AppIndicator3
+                APP_INDICATOR_SUPPORT = True
+            except:
+                pass
 
         if APP_INDICATOR_SUPPORT:
             self._icon = AppIndicator3.Indicator.new(
