@@ -11,7 +11,7 @@ Status
 * Loading driver and attaching to HID device - **DONE**
 * Parse events for the gen2 (array) and gen3 (bitmask) mice - **DONE**
 * Print parsed keyboard event from event mapping to __dmesg__ - **DONE**
-* Generate keyboard events - **PLANNED**
+* Generate keyboard events - **DONE**
 
 
 Building

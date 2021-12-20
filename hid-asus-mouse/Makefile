@@ -11,6 +11,9 @@ clean:
 load:
 	sudo insmod hid-asus-mouse.ko
 
+unload:
+	sudo rmmod hid-asus-mouse.ko
+
 reload:
 	sudo rmmod hid-asus-mouse.ko
 	sudo insmod hid-asus-mouse.ko

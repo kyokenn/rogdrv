@@ -4,30 +4,32 @@
 /* #include "hid-ids.h" */
 
 // TODO: move to hid-ids.h
-// *_WIRED devices are wireless devices connected with charge/data cable
+// *_RF devices are wireless devices connected with RF receiver
+// *_USB devices are wireless devices connected with usb cable
 #define USB_VENDOR_ID_ASUSTEK		0x0b05
 #define USB_DEVICE_ID_ASUSTEK_ROG_BUZZARD 0x1816
 #define USB_DEVICE_ID_ASUSTEK_ROG_GLADIUS2 0x1845
 #define USB_DEVICE_ID_ASUSTEK_ROG_GLADIUS2_ORIGIN 0x1877
 #define USB_DEVICE_ID_ASUSTEK_ROG_GLADIUS2_ORIGIN_PINK 0x18cd
-#define USB_DEVICE_ID_ASUSTEK_ROG_KERIS_WIRELESS 0x1960
-#define USB_DEVICE_ID_ASUSTEK_ROG_KERIS_WIRELESS_WIRED 0x195e
+#define USB_DEVICE_ID_ASUSTEK_ROG_KERIS_WIRELESS_RF 0x1960
+#define USB_DEVICE_ID_ASUSTEK_ROG_KERIS_WIRELESS_USB 0x195e
 #define USB_DEVICE_ID_ASUSTEK_ROG_PUGIO 0x1846
 #define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_CARRY 0x18b4
-#define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_CHAKRAM 0x18E5
-#define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_CHAKRAM_WIRED 0x18E3
+#define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_CHAKRAM_RF 0x18E5
+#define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_CHAKRAM_USB 0x18E3
 #define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_EVOLVE 0x185B
 #define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_IMPACT 0x1847
-#define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_IMPACT2_WIRELESS 0x1949
-#define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_IMPACT2_WIRELESS_WIRED 0x1947
-#define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_SPATHA 0x1824
-#define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_SPATHA_WIRED 0x181C
+#define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_IMPACT2_WIRELESS_RF 0x1949
+#define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_IMPACT2_WIRELESS_USB 0x1947
+#define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_SPATHA_RF 0x1824
+#define USB_DEVICE_ID_ASUSTEK_ROG_STRIX_SPATHA_USB 0x181C
 
 #define ASUS_MOUSE_DEBUG 1
 
 #define ASUS_MOUSE_DATA_KEY_STATE_SIZE 4
 struct asus_mouse_data {
 	__u32 key_state[ASUS_MOUSE_DATA_KEY_STATE_SIZE];
+	struct input_dev *input;
 };
 
 #define ASUS_MOUSE_MAPPING_SIZE 98
@@ -133,10 +135,10 @@ static unsigned char asus_mouse_mapping[] = {
 	0,
 };
 
-static int asus_mouse_probe(struct hid_device *hdev,
-		const struct hid_device_id *id)
+static int asus_mouse_probe(struct hid_device *hdev, const struct hid_device_id *id)
 {
 	struct usb_interface *iface = to_usb_interface(hdev->dev.parent);
+	struct hid_input *next, *hidinput = NULL;
 	struct asus_mouse_data *drv_data;
 	int error, i;
 
@@ -148,6 +150,7 @@ static int asus_mouse_probe(struct hid_device *hdev,
 
 	for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_SIZE; i++)
 		drv_data->key_state[i] = 0;
+	drv_data->input = NULL;
 	hid_set_drvdata(hdev, drv_data);
 
 	error = hid_parse(hdev);
@@ -165,8 +168,15 @@ static int asus_mouse_probe(struct hid_device *hdev,
 #ifdef ASUS_MOUSE_DEBUG
 	/* printk(KERN_INFO "ASUS MOUSE: MOUS %d", USB_INTERFACE_PROTOCOL_MOUSE); */
 	/* printk(KERN_INFO "ASUS MOUSE: KEYB %d", USB_INTERFACE_PROTOCOL_KEYBOARD); */
-	printk(KERN_INFO "ASUS MOUSE: PROB %d %d", iface->cur_altsetting->desc.bInterfaceProtocol, hdev->collection->usage);
+	printk(KERN_INFO "ASUS MOUSE: PROB %d %X", iface->cur_altsetting->desc.bInterfaceProtocol, hdev->collection->usage);
 #endif
+
+	list_for_each_entry_safe(hidinput, next, &hdev->inputs, list) {
+		if (hidinput->registered && hidinput->input != NULL) {
+			drv_data->input = hidinput->input;
+			break;
+		}
+	}
 
 	return 0;
 }
@@ -175,6 +185,7 @@ static void asus_mouse_remove(struct hid_device *hdev)
 {
 	struct asus_mouse_data *drv_data = hid_get_drvdata(hdev);
 	if (drv_data != NULL) {
+		/* TODO: clean up? */
 	}
 	hid_hw_stop(hdev);
 }
@@ -186,8 +197,6 @@ static int asus_mouse_raw_event(struct hid_device *hdev, struct hid_report *repo
 	u32 bitmask[4], modified;
 	struct usb_interface *iface = to_usb_interface(hdev->dev.parent);
 	struct asus_mouse_data *drv_data = hid_get_drvdata(hdev);
-
-	/* printk(KERN_INFO "ASUS MOUSE: SIZE %d PROT %d", size, iface->cur_altsetting->desc.bInterfaceProtocol); */
 
 	if (drv_data == NULL)
 		return 0;
@@ -206,7 +215,7 @@ static int asus_mouse_raw_event(struct hid_device *hdev, struct hid_report *repo
 		if (data[0] != 0x01)  // validate packet
 			return 0;
 
-		for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_SIZE; i++)
+		for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_SIZE; i++)  // init/reset bitmasks
 			bitmask[i] = 0;
 
 		for (offset = 3; offset < size; offset++) {
@@ -252,7 +261,6 @@ static int asus_mouse_raw_event(struct hid_device *hdev, struct hid_report *repo
 	for (i = 0; i < ASUS_MOUSE_DATA_KEY_STATE_SIZE; i++) {
 		modified = drv_data->key_state[ASUS_MOUSE_DATA_KEY_STATE_SIZE - i - 1] ^
 			bitmask[ASUS_MOUSE_DATA_KEY_STATE_SIZE - i - 1];
-		/* printk(KERN_INFO "ASUS MOUSE: MODI %08X", modified); */
 		for (bit = 0; bit < 32; bit += 1) {
 			if (!(modified & (1 << bit)))
 				continue;
@@ -265,18 +273,18 @@ static int asus_mouse_raw_event(struct hid_device *hdev, struct hid_report *repo
 
 			key_code = asus_mouse_mapping[asus_code];
 
-			/* input_event(shared->input, EV_KEY, mapping[i][1], action); */
-			/* input_sync(shared->input); */
-
 			if (bitmask[ASUS_MOUSE_DATA_KEY_STATE_SIZE - i - 1] & (1 << bit)) {
 #ifdef ASUS_MOUSE_DEBUG
-				printk(KERN_INFO "ASUS MOUSE: PRES 0x%02X (%d) %c", asus_code, asus_code, key_code);
+				printk(KERN_INFO "ASUS MOUSE: PRES 0x%02X (%d) - 0x%02X (%d) '%c'", asus_code, asus_code, key_code, key_code, key_code);
 #endif
+				input_event(drv_data->input, EV_KEY, key_code, 1);
 			} else {
 #ifdef ASUS_MOUSE_DEBUG
-				printk(KERN_INFO "ASUS MOUSE: RELE 0x%02X (%d) %c", asus_code, asus_code, key_code);
+				printk(KERN_INFO "ASUS MOUSE: RELE 0x%02X (%d) - 0x%02X (%d) '%c'", asus_code, asus_code, key_code, key_code, key_code);
 #endif
+				input_event(drv_data->input, EV_KEY, key_code, 0);
 			}
+			input_sync(drv_data->input);
 		}
 	}
 
@@ -292,18 +300,18 @@ static const struct hid_device_id asus_mouse_devices[] = {
 	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_GLADIUS2) },
 	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_GLADIUS2_ORIGIN) },
 	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_GLADIUS2_ORIGIN_PINK) },
-	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_KERIS_WIRELESS) },
-	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_KERIS_WIRELESS_WIRED) },
+	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_KERIS_WIRELESS_RF) },
+	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_KERIS_WIRELESS_USB) },
 	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_PUGIO) },
 	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_STRIX_CARRY) },
-	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_STRIX_CHAKRAM) },
-	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_STRIX_CHAKRAM_WIRED) },
+	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_STRIX_CHAKRAM_RF) },
+	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_STRIX_CHAKRAM_USB) },
 	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_STRIX_EVOLVE) },
 	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_STRIX_IMPACT) },
-	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_STRIX_IMPACT2_WIRELESS) },
-	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_STRIX_IMPACT2_WIRELESS_WIRED) },
-	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_STRIX_SPATHA) },
-	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_STRIX_SPATHA_WIRED) },
+	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_STRIX_IMPACT2_WIRELESS_RF) },
+	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_STRIX_IMPACT2_WIRELESS_USB) },
+	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_STRIX_SPATHA_RF) },
+	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK, USB_DEVICE_ID_ASUSTEK_ROG_STRIX_SPATHA_USB) },
 	{ }
 };
 MODULE_DEVICE_TABLE(hid, asus_mouse_devices);
