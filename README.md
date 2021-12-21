@@ -2,12 +2,17 @@ rogdrv
 ======
 
 **rogdrv** is a simple ASUS ROG (Republic of Gamers) userspace mouse driver for Linux.
-The mouse is a composite device which consists of 3 devices/interfaces:
-mouse, keyboard and consumer control for changing the mouse settings.
-The keyboard interface is unsupported on Linux, but it's recognised as HID device.
+The mouse is a composite device which consists of 3 interfaces:
+mouse, keyboard and consumer control (for changing the mouse settings).
+
+The keyboard interface for some devices is unsupported on Linux,
+but it's recognised as HID device.
 So this driver maps HID events to the generic keyboard events.
 
+For the better approach you can try the experimental kernel driver - [hid-asus-mouse](https://github.com/kyokenn/hid-asus-mouse)
+
 The protocol was reverse-engineered, so everything is experimental. Use at your own risk.
+
 
 Supported devices and features
 ------------------------------
