@@ -9,9 +9,32 @@ The keyboard interface for some devices is unsupported on Linux,
 but it's recognised as HID device.
 So this driver maps HID events to the generic keyboard events.
 
-For the better approach you can try the experimental kernel driver - [hid-asus-mouse](https://github.com/kyokenn/hid-asus-mouse)
-
 The protocol was reverse-engineered, so everything is experimental. Use at your own risk.
+
+
+Alternative solutions
+---------------------
+
+**Keyboard events handling module**
+
+HID kernel module - [hid-asus-mouse](https://github.com/kyokenn/hid-asus-mouse)
+
+
+**Mouse configuration tool**
+
+[piper](https://github.com/libratbag/piper)
+
+with
+
+[libratbag](https://github.com/kyokenn/libratbag) (fork, not merged yet into upstream)
+
+Current missing features:
+
+* Button response
+* Angle snapping
+* Extra LED modes
+* Key binding
+* Sleep timeout
 
 
 Supported devices and features
@@ -57,6 +80,7 @@ It would report only **Mouse** and **Keyboard** interfaces.
 * Spatha
 * Gladius
 * Strix Evolve
+
 
 Requirements
 ------------
