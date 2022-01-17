@@ -216,3 +216,15 @@ class ChakramWirelessWired(ChakramWireless):
     Chakram Wireless in wired mode.
     """
     product_id = 0x18E3
+
+
+class Pugio2(Pugio):
+    product_id = 0x1906
+    profiles = 3
+    buttons = 9
+    leds = 3
+    wireless = True
+
+
+class Pugio2Wired(Pugio2):
+    product_id = 0x1908
