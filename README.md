@@ -49,6 +49,7 @@ Device name                   | Profiles | Button Bindings | Performance Setting
 **Keris Wireless**            | +        | +               | +                    | +    | +
 **Chakram**                   | +        | ?               | +                    | +    | +
 **Pugio**                     | +        | +               | +                    | +    | N/A
+**Pugio II**                  | +        | ?               | ?                    | +    | ?
 **Strix Carry**               | +        | +               | +                    | N/A  | +
 **Strix Impact II Wireless**  | +        | +               | +                    | +    | ?
 **Strix Impact**              | N/A      | ?               | ?                    | +    | N/A
