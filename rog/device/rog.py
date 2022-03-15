@@ -228,3 +228,5 @@ class Pugio2(Pugio):
 
 class Pugio2Wired(Pugio2):
     product_id = 0x1908
+    control_interface = 0
+    keyboard_interface = 2
