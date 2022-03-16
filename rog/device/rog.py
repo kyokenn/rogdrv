@@ -105,11 +105,11 @@ class StrixImpact(Device):
     profiles = 0
 
 
-class StrixImpactIIWirelessWired(Device):
+class StrixImpactIIWireless(Device):
     """
-    Strix Impact II WIreless with wire connected
+    Strix Impact II Wireless in wireless mode
     """
-    product_id = 0x1947
+    product_id = 0x1949
     wireless = True
     keyboard_interface = 2
     control_interface = 0
@@ -119,11 +119,24 @@ class StrixImpactIIWirelessWired(Device):
     leds = 3
 
 
-class StrixImpactIIWireless(StrixImpactIIWirelessWired):
+class StrixImpactIIWirelessWired(StrixImpactIIWireless):
+    """
+    Strix Impact II WIreless with wire connected
+    """
+    product_id = 0x1947
+
+
+class StrixImpactIIElectroPunk(Device):
     """
     Strix Impact II Wireless in wireless mode
     """
-    product_id = 0x1949
+    product_id = 0x1956
+    keyboard_interface = 2
+    control_interface = 0
+    profiles = 3
+    buttons = 8
+    dpis = 4
+    leds = 3
 
 
 class Buzzard(Device):
