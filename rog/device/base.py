@@ -79,9 +79,6 @@ class Device(object, metaclass=DeviceMeta):
         if len(subdevices):
             logger.debug('found {} subdevices:'.format(len(subdevices)))
             for subdevice in subdevices:
-                # print(device)
-                # print(dir(device))
-
                 info = ''
                 if subdevice['interface_number'] == self.keyboard_interface:
                     info += ' [using as keyboard]'
@@ -99,8 +96,6 @@ class Device(object, metaclass=DeviceMeta):
                             info))
         else:
             logger.debug('0 devices found')
-
-        if not subdevices:
             raise DeviceNotFound()
 
         if self._ctl is None:
@@ -122,10 +117,13 @@ class Device(object, metaclass=DeviceMeta):
             cls.__name__, cls.vendor_id, cls.product_id)
 
     def close(self):
-        logger.debug('closing keyboard subdevice')
-        self._kbd.close()
-        logger.debug('closing control subdevice')
-        self._ctl.close()
+        if self._kbd is not None:
+            logger.debug('closing keyboard subdevice')
+            self._kbd.close()
+
+        if self._ctl is not None:
+            logger.debug('closing control subdevice')
+            self._ctl.close()
 
     def next_event(self):
         """
@@ -530,8 +528,8 @@ class Device(object, metaclass=DeviceMeta):
         response = self.query(bytes(request))
 
         sleep = defs.SLEEP_TIME[response[4]]
-        charge = response[6] * 25
         alert = response[5] * 25  # alert level need mode testing
+        charge = response[6] * 25
         if alert > 50:
             alert = 0
         return sleep, charge, alert

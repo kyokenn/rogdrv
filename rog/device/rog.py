@@ -187,6 +187,20 @@ class ChakramWirelessWired(ChakramWireless):
     product_id = 0x18E3
 
 
+class ChakramX(StrixProfileMixin, BatteryV2Mixin, DoubleDPIMixin, BitmaskMixin, Device):
+    """
+    Chakram Wireless in wireless mode.
+    """
+    product_id = 0x1A1A
+    profiles = 3
+    buttons = 5
+    leds = 3
+    keyboard_interface = 2
+    control_interface = 0
+    wireless = True
+    dpis = 4
+
+
 class Pugio2(BatteryV2Mixin, Pugio):
     product_id = 0x1906
     profiles = 3
