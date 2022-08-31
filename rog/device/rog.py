@@ -56,6 +56,14 @@ class Gladius2OriginPink(Gladius2Origin):
     product_id = 0x18CD
 
 
+class Gladius3(DoubleDPIMixin, Gladius2):
+    """
+    ROG Gladius III.
+    """
+    product_id = 0x197B
+    profiles = 5
+
+
 class Pugio(Device):
     """
     Gladius II based 10 buttons device.
