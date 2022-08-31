@@ -62,6 +62,7 @@ class Gladius3(DoubleDPIMixin, Gladius2):
     """
     product_id = 0x197B
     profiles = 5
+    dpis = 4
 
 
 class Pugio(Device):
