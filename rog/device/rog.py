@@ -154,6 +154,13 @@ class Buzzard(Device):
     buttons = 10
 
 
+class TUFM3(Device):
+    product_id = 0x1910
+    profiles = 3
+    buttons = 10
+    leds = 1
+
+
 class KerisWireless(BatteryV2Mixin, DoubleDPIMixin, BitmaskMixin, Device):
     """
     Keris Wireless in wireless mode.
