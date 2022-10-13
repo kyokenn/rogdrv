@@ -101,6 +101,7 @@ ACTIONS_MOUSE = {
     0xE4: 'MOUSE_BACKWARD',
     0xE5: 'MOUSE_FORWARD',
     0xE6: 'MOUSE_DPI',
+    0xE7: 'MOUSE_DPI_TARGET',
     0xE8: 'MOUSE_SCROLL_UP',
     0xE9: 'MOUSE_SCROLL_DOWN',
     0xFF: 'MOUSE_DISABLED',
@@ -158,6 +159,7 @@ BUTTON_SLOTS = {
     8: ACTIONS_MOUSE_NAMES['MOUSE_FORWARD'],
     9: 0xE1,  # right backward
     10: 0xE2,  # right forward
+    11: ACTIONS_MOUSE_NAMES['MOUSE_DPI_TARGET'],
 }
 
 SLEEP_TIME = {
