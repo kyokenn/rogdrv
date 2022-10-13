@@ -26,7 +26,7 @@ class Gladius2(Device):
     """
     product_id = 0x1845
     profiles = 3
-    buttons = 8  # could be 9 buttons? does the "DPI Target Button" counts?
+    buttons = 9
     buttons_mapping = {
         1: 1,
         2: 2,
@@ -36,6 +36,7 @@ class Gladius2(Device):
         6: 6,
         7: 4,
         8: 5,
+        9: 7,
     }
     leds = 3
 
