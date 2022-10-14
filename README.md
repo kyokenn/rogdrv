@@ -26,7 +26,7 @@ HID kernel module - [hid-asus-mouse](https://github.com/kyokenn/hid-asus-mouse)
 
 with
 
-[libratbag](https://github.com/kyokenn/libratbag) (fork, not merged yet into upstream)
+[libratbag](https://github.com/libratbag/libratbag)
 
 Current missing features:
 
