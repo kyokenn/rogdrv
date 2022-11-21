@@ -36,7 +36,7 @@ class Gladius2(Device):
         6: 6,
         7: 4,
         8: 5,
-        9: 7,
+        11: 7,  # added as button 11 since that's the index of the action in defs.BUTTON_SLOTS
     }
     leds = 3
 
