@@ -44,17 +44,17 @@ class Bindings(object):
         """
         # mouse button, action type, action
         DEFAULTS = (
-            (1, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_LEFT']),
-            (2, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_RIGHT']),
-            (3, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_MIDDLE']),
-            (4, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_SCROLL_UP']),
-            (5, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_SCROLL_DOWN']),
-            (6, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_DPI']),
-            (7, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_BACKWARD']),
-            (8, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_FORWARD']),
-            (9, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_BACKWARD']),
-            (10, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_FORWARD']),
-        )
+            # (1, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_LEFT']),
+            # (2, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_RIGHT']),
+            # (3, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_MIDDLE']),
+            # (4, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_SCROLL_UP']),
+            # (5, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_SCROLL_DOWN']),
+            # (6, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_DPI']),
+            # (7, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_BACKWARD']),
+            # (8, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_FORWARD']),
+            # (9, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_BACKWARD']),
+            # (10, defs.ACTION_TYPE_MOUSE, defs.ACTIONS_MOUSE_NAMES['MOUSE_FORWARD']),
+        )  # removed all defaults so it doesn't contain buttons that don't exist
 
         self._buttons = buttons
         self._actions = collections.OrderedDict(

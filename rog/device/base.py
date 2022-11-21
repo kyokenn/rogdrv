@@ -254,11 +254,12 @@ class Device(object, metaclass=DeviceMeta):
 
         bindings = Bindings(self.buttons)
         for btn, idx in self.buttons_mapping.items():
-            if btn <= self.buttons:
-                bindings.bind(
-                    btn,
-                    response[idx * 2 + 2],
-                    response[idx * 2 + 2 + 1])
+            # no need to check since a button might have an index larger than the amount
+            #if btn <= self.buttons:
+            bindings.bind(
+                btn,
+                response[idx * 2 + 2],
+                response[idx * 2 + 2 + 1])
 
         return bindings
 
