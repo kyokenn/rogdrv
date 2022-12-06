@@ -66,6 +66,15 @@ class Gladius3(DoubleDPIMixin, Gladius2):
     dpis = 4
 
 
+class Gladius3Wireless(Gladius3):
+    """
+    ROG Gladius III Wireless.
+    """
+    product_id = 0x197F
+    profiles = 5
+    dpis = 4
+
+
 class Pugio(Device):
     """
     Gladius II based 10 buttons device.
