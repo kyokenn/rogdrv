@@ -198,7 +198,7 @@ class ChakramWireless(StrixProfileMixin, BatteryV2Mixin, DoubleDPIMixin, Bitmask
     """
     product_id = 0x18E5
     profiles = 3
-    buttons = 5
+    buttons = 8
     leds = 3
     keyboard_interface = 2
     control_interface = 0
@@ -219,7 +219,7 @@ class ChakramX(StrixProfileMixin, BatteryV2Mixin, DoubleDPIMixin, BitmaskMixin, 
     """
     product_id = 0x1A1A
     profiles = 3
-    buttons = 5
+    buttons = 8
     leds = 3
     keyboard_interface = 2
     control_interface = 0
