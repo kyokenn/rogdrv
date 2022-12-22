@@ -57,6 +57,11 @@ class Gladius2OriginPink(Gladius2Origin):
     product_id = 0x18CD
 
 
+class Gladius2Core(DoubleDPIMixin, Gladius2):
+    product_id = 0x18DD
+    buttons = 8
+
+
 class Gladius3(DoubleDPIMixin, Gladius2):
     """
     ROG Gladius III.
