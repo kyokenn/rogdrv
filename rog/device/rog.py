@@ -60,6 +60,8 @@ class Gladius2OriginPink(Gladius2Origin):
 class Gladius2Core(DoubleDPIMixin, Gladius2):
     product_id = 0x18DD
     buttons = 8
+    keyboard_interface = 2
+    control_interface = 0
 
 
 class Gladius3(DoubleDPIMixin, Gladius2):
