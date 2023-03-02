@@ -90,12 +90,12 @@ Install the D-BUS settings:
 sudo cp -fv ./ratbag-python/dbus/org.freedesktop.ratbag1.conf /etc/dbus-1/system.d/
 ```
 
-Run the "ratbag-python" daemon:
+Run the **ratbag-python** daemon:
 ```
 sudo ratbagd
 ```
 
-Run the "piper" GUI.
+Run the **piper** GUI.
 ```
 piper
 ```
