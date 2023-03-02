@@ -15,11 +15,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 import gi
-import os
-import signal
 
 from . import Gtk
-from .. import defs, logger
 
 
 class TrayMenu(object):
@@ -37,7 +34,7 @@ class TrayMenu(object):
                 gi.require_version('AyatanaAppIndicator3', '0.1')
                 from gi.repository import AyatanaAppIndicator3 as AppIndicator3
                 APP_INDICATOR_SUPPORT = True
-            except:
+            except Exception:
                 pass
 
         if not APP_INDICATOR_SUPPORT:
@@ -45,7 +42,7 @@ class TrayMenu(object):
                 gi.require_version('AppIndicator3', '0.1')
                 from gi.repository import AppIndicator3
                 APP_INDICATOR_SUPPORT = True
-            except:
+            except Exception:
                 pass
 
         if APP_INDICATOR_SUPPORT:

@@ -1,4 +1,4 @@
-# Copyright (C) 2018 Kyoken, kyoken@kyoken.ninja
+# Copyright (C) 2023 Kyoken, kyoken@kyoken.ninja
 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -15,63 +15,34 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 import argparse
-import os
-import signal
-import sys
-import threading
 import logging
+import sys
 
-from . import defs
-from .event import DeviceEventHandler
-from .device import get_device
+from gi.repository import GLib
+
+try:
+    import ratbag
+except ImportError:
+    sys.path.append('ratbag-python')
+    import ratbag
+
 
 logger = logging.getLogger('rogdrv')
-
-
-class ROGDRV(threading.Thread):
-    """
-    Virtual uinput device driver which converts mouse events
-    into uinput events.
-    """
-    def __init__(self):
-        super().__init__()
-        parser = argparse.ArgumentParser()
-        parser.add_argument(
-            '-c', '--console', action='store_true', required=False,
-            help='Starts in pure console mode, disables tray icon')
-        self._args = parser.parse_args()
-
-        self._device = get_device()
-        self._handler = DeviceEventHandler()
-        self._is_running = True
-
-    @property
-    def device(self):
-        return self._device
-
-    @property
-    def handler(self):
-        return self._handler
-
-    @property
-    def is_console(self):
-        return self._args.console
-
-    def stop(self):
-        self._is_running = False
-
-    def run(self):
-        while self._is_running:
-            e = self._device.next_event()
-            self._handler.handle_event(e)
 
 
 class ROGDRVConfig(object):
     """
     Mouse configuration tool
     """
-    def __init__(self):
-        self._device = None
+    def _get_device(self, callback):
+        mainloop = GLib.MainLoop()
+        ratbagd = ratbag.Ratbag.create()
+
+        ratbagd.connect('device-added', callback)
+        ratbagd.start()
+
+        GLib.timeout_add(1000, mainloop.quit)
+        mainloop.run()
 
     def run(self):
         if len(sys.argv) < 2 or sys.argv[1] in ('-h', '--help'):
@@ -80,11 +51,11 @@ class ROGDRVConfig(object):
 
         cmd = sys.argv.pop(1)
 
-        if cmd != 'actions':
-            self._device = get_device()
-            if not self._device:
-                print('Device not found')
-                return
+        # if cmd != 'actions':
+        #     self._device = get_device()
+        #     if not self._device:
+        #         print('Device not found')
+        #         return
 
         if not cmd.startswith('_'):
             if hasattr(self, cmd):
@@ -121,28 +92,43 @@ Available commands:''')
         """
         display list of available action codes
         """
+        from ratbag.hid import Key
+
+        keys = []
+        for name in dir(Key):
+            if name.startswith('KEY_'):
+                key = getattr(Key, name)
+                if 4 < key.value <= 99:
+                    keys.append(key)
+        keys.sort(key=lambda x: x.value)
+
+        specials = []
+        for name in dir(ratbag.ActionSpecial.Special):
+            special = getattr(ratbag.ActionSpecial.Special, name)
+            if hasattr(special, 'value'):
+                specials.append(special)
+        specials.sort(key=lambda x: x.value)
+
         print('Keyboard actions:')
-        for action, name in defs.ACTIONS_KEYBOARD.items():
+        for key in keys:
             print('  {action} (0x{action:02X}): {name}'.format(**{
-                'action': action,
-                'name': name,
+                'action': key.value,
+                'name': key.name,
             }))
 
         print('')
         print('Mouse actions:')
-        for action, name in defs.ACTIONS_MOUSE.items():
+        for i in range(0, 5):
+            action = i + 0xF0
             print('  {action} (0x{action:02X}): {name}'.format(**{
                 'action': action,
-                'name': name,
+                'name': f'Button {i + 1}',
             }))
-
-    def version(self):
-        """
-        get device firmware version
-        """
-        profile, ver1, ver2 = self._device.get_profile_version()
-        print('Primary version: {:X}.{:02X}.{:02X}'.format(*ver1))
-        print('Secondary version: {:X}.{:02X}.{:02X}'.format(*ver2))
+        for special in specials:
+            print('  {action} (0x{action:02X}): {name}'.format(**{
+                'action': special.value,
+                'name': special.name,
+            }))
 
     def profile(self):
         """
@@ -150,19 +136,21 @@ Available commands:''')
         """
         parser = argparse.ArgumentParser()
         parser.add_argument(
-            '-p', '--profile', type=int, default=0, required=False,
-            help='Profile no. to set, starting from 1')
+            '-p', '--profile', type=int, default=-1, required=False,
+            help='Profile no. to set, starting from 0')
         args = parser.parse_args()
 
-        if not self._device.profiles:
-            print('Profiles are not supported')
-            return
+        def read(r, device):
+            if args.profile >= 0:
+                for profile in device.profiles:
+                    if profile.index == args.profile:
+                        profile.set_active()
 
-        if args.profile:
-            self._device.set_profile(args.profile)
+            for profile in device.profiles:
+                if profile.active:
+                    print('Profile: {}'.format(profile.index))
 
-        profile, ver1, ver2 = self._device.get_profile_version()
-        print('Profile: {}'.format(profile))
+        self._get_device(read)
 
     def bind(self):
         """
@@ -170,22 +158,49 @@ Available commands:''')
         """
         parser = argparse.ArgumentParser()
         parser.add_argument(
-            '-b', '--button', type=int, required=False, help='Button no. to bind, starting from 1')
+            '-b', '--button', type=int, default=-1, required=False,
+            help='Button no. to bind, starting from 0')
         parser.add_argument(
             '-a', '--action', type=str, required=False, help='Action code')
         args = parser.parse_args()
 
-        if args.button and args.action:
-            action = args.action.lower()
-            if action.startswith('0x'):
-                action = int(action, 16)
-            else:
-                action = int(action)
+        def read(r, device):
+            from ratbag.drivers.asus import asus_get_linux_key_code
 
-            self._device.bind(args.button, action)
-            self._device.save()
+            if args.button >= 0 and args.action:
+                action = args.action.lower()
+                if action.startswith('0x'):
+                    action_code = int(action, 16)
+                else:
+                    action_code = int(action)
 
-        print(self._device.get_bindings())
+                for profile in device.profiles:
+                    if not profile.active:
+                        continue
+
+                    for button in profile.buttons:
+                        if button.index == args.button:
+                            if action_code >= ratbag.ActionSpecial.Special.UNKNOWN.value:
+                                for name in dir(ratbag.ActionSpecial.Special):
+                                    special = getattr(ratbag.ActionSpecial.Special, name)
+                                    if hasattr(special, 'value') and special.value == action_code:
+                                        button.set_action(ratbag.ActionSpecial.create(special))
+                            elif action_code >= 0xF0:
+                                button.set_action(ratbag.ActionButton.create(action_code - 0xF0 + 1))
+                            else:
+
+                                button.set_action(ratbag.ActionKey.create(asus_get_linux_key_code(action_code)))
+
+                device.emit('commit', None)
+
+            for profile in device.profiles:
+                if not profile.active:
+                    continue
+
+                for button in profile.buttons:
+                    print(f'{button.index}: {button.action}')
+
+        self._get_device(read)
 
     def led(self):
         """
@@ -193,40 +208,54 @@ Available commands:''')
         """
         parser = argparse.ArgumentParser()
         parser.add_argument(
-            '-l', '--led', type=str, required=False, default=None,
-            help='LED to set: all (default), logo, wheel, bottom')
+            '-l', '--led', type=int, required=False, default=-1,
+            help='LED no. to set, starting from 0')
         parser.add_argument(
             '-c', '--color', type=str, required=False, default=None,
             help='Color in hex. HTML format, ex.: aabbcc')
         parser.add_argument(
-            '-b', '--brightness', type=int, required=False, default=0,
-            help='Brightness: 0 - 4, default is 0')
+            '-b', '--brightness', type=int, required=False, default=255,
+            help='Brightness: 0 - 255')
         parser.add_argument(
-            '-m', '--mode', type=str, required=False, default=None,
-            help='LED mode: default, breath, rainbow, wave, reactive, flasher, battery')
+            '-m', '--mode', type=str, required=False, default='ON',
+            help='LED mode: ON (default), CYCLE, BREATHING')
         args = parser.parse_args()
 
-        if not self._device.leds:
-            print("Device does'n have any LEDs")
-            return
+        def read(r, device):
+            if args.led >= 0 and args.color:
+                # convert color from HTML
+                r = 0
+                g = 0
+                b = 0
+                if args.color:
+                    color = args.color.lstrip('#')
+                    r = int(color[0:2], 16)
+                    g = int(color[2:4], 16)
+                    b = int(color[4:6], 16)
 
-        if args.led or args.color or args.brightness or args.mode:
-            r = 0
-            g = 0
-            b = 0
-            if args.color:
-                color = args.color.lstrip('#')
-                r = int(args.color[0:2], 16)
-                g = int(args.color[2:4], 16)
-                b = int(args.color[4:6], 16)
+                for profile in device.profiles:
+                    if not profile.active:
+                        continue
 
-            self._device.set_led(
-                args.led or 'all', (r, g, b),
-                mode=args.mode or 'default',
-                brightness=args.brightness)
-            self._device.save()
+                    for led in profile.leds:
+                        if led.index == args.led:
+                            mode = getattr(ratbag.Led.Mode, args.mode)
+                            led.set_mode(mode)
+                            led.set_color((r, g, b))
+                            led.set_brightness(max(args.brightness, 0))
 
-        print(self._device.get_leds())
+                device.emit('commit', None)
+
+            for profile in device.profiles:
+                if not profile.active:
+                    continue
+
+                for led in profile.leds:
+                    # convert color to HTML
+                    color = '#{:02x}{:02x}{:02x}'.format(*led.color)
+                    print(f'{led.index}: {led.mode.name} {color} brightness={led.brightness}')
+
+        self._get_device(read)
 
     def dpi(self):
         """
@@ -234,24 +263,33 @@ Available commands:''')
         """
         parser = argparse.ArgumentParser()
         parser.add_argument(
-            '-d', '--dpi', type=int, default=0, required=False,
+            '-d', '--dpi', type=int, default=-1, required=False,
             help='DPI rate')
         parser.add_argument(
-            '-p', '--preset', type=int, default=0, required=False,
-            help='Preset no. to set, starting from 1 (default)')
+            '-p', '--preset', type=int, default=-1, required=False,
+            help='Preset no. to set, starting from 0')
         args = parser.parse_args()
 
-        if not self._device.dpis:
-            print('DPI presets are not supported')
-            return
+        def read(r, device):
+            if args.dpi >= 0 and args.preset >= 0:
+                for profile in device.profiles:
+                    if not profile.active:
+                        continue
 
-        if args.dpi:
-            self._device.set_dpi(args.dpi, preset=args.preset or 1)
-            self._device.save()
+                    for resolution in profile.resolutions:
+                        if resolution.index == args.preset:
+                            resolution.set_dpi((args.dpi, args.dpi))
 
-        dpis, rate, response, snapping = self._device.get_dpi_rate_response_snapping()
-        for i, dpi in enumerate(dpis, start=1):
-            print('DPI Preset {} ({}): {}'.format(i, defs.DPI_PRESET_COLORS[i], dpi))
+                device.emit('commit', None)
+
+            for profile in device.profiles:
+                if not profile.active:
+                    continue
+
+                for resolution in profile.resolutions:
+                    print(f'DPI Preset {resolution.index}: {resolution.dpi[0]}')
+
+        self._get_device(read)
 
     def rate(self):
         """
@@ -259,18 +297,29 @@ Available commands:''')
         """
         parser = argparse.ArgumentParser()
         parser.add_argument(
-            '-r', '--rate', type=int, default=0, required=False,
-            help='Polling rate in Hz: 125, 250, 500, 1000 (default)')
+            '-r', '--rate', type=int, default=-1, required=False,
+            help='Polling rate in Hz: 125, 250, 500, 1000')
         args = parser.parse_args()
 
-        if args.rate:
-            self._device.set_rate(args.rate or 1000)
-            self._device.save()
+        def read(r, device):
+            if args.rate >= 0:
+                for profile in device.profiles:
+                    if not profile.active:
+                        continue
 
-        dpi, rate, response, snapping = self._device.get_dpi_rate_response_snapping()
-        print('Polling rate: {} Hz'.format(rate))
+                    profile.set_report_rate(args.rate)
 
-    def sleep(self):
+                device.emit('commit', None)
+
+            for profile in device.profiles:
+                if not profile.active:
+                    continue
+
+                print(f'Polling rate: {profile.report_rate} Hz')
+
+        self._get_device(read)
+
+    def _sleep(self):
         """
         get/set sleep timeout, battery charge and alert level
         """
@@ -305,7 +354,7 @@ Available commands:''')
         print('Charge: {}%'.format(charge))
         print('Alert: {}'.format('{}%'.format(alert) if alert else 'disabled'))
 
-    def snapping(self):
+    def _snapping(self):
         """
         enable/disable snapping
         """
@@ -322,7 +371,7 @@ Available commands:''')
         dpis, rate, response, snapping = self._device.get_dpi_rate_response_snapping()
         print('Angle snapping: {}'.format('enabled' if snapping else 'disabled'))
 
-    def response(self):
+    def _response(self):
         """
         get/set button response
         """
@@ -339,37 +388,6 @@ Available commands:''')
         dpis, rate, response, snapping = self._device.get_dpi_rate_response_snapping()
         print('Button response: {} ms'.format(response))
 
-    def dump(self):
-        """
-        dump settings to stdout or .json file
-        """
-        parser = argparse.ArgumentParser()
-        parser.add_argument(
-            '-o', '--output', type=str, required=False,
-            help='Path to .json file for saving to')
-        args = parser.parse_args()
-
-        if args.output:
-            with open(args.output, 'w') as f:
-                self._device.dump(f)
-            print('Settings saved into: {}'.format(args.output))
-        else:
-            print(self._device.dump())
-
-    def load(self):
-        """
-        load settings from .json file
-        """
-        parser = argparse.ArgumentParser()
-        parser.add_argument(
-            'input', type=str, required=True,
-            help='Path to .json file for loading from')
-        args = parser.parse_args()
-
-        with open(args.input, 'r') as f:
-            device.load(f)
-        print('Settings loaded from: {}'.format(args.input))
-
 
 def logging_init():
     if '--debug' in sys.argv:
@@ -382,18 +400,8 @@ def logging_init():
 
 def rogdrv():
     logging_init()
-    app = ROGDRV()
-
-    if app.is_console:
-        app.run()
-    else:
-        app.start()
-
-        from .ui import gtk3_main
-        gtk3_main(app.device)
-        app.device.close()
-        app.handler.close()
-        app.stop()
+    from .ui import gtk3_main
+    gtk3_main()
 
 
 def rogdrv_config():

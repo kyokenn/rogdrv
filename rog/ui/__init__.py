@@ -24,6 +24,8 @@ gi.require_version('Notify', '0.7')
 from gi.repository import Gtk
 from gi.repository import Notify
 
+import ratbag
+
 from .menu import TrayMenu
 from .handler import TrayMenuEventHandler
 from .utils import find_icons, get_autostart_path
@@ -31,7 +33,7 @@ from .utils import find_icons, get_autostart_path
 APPID = 'rogdrv'
 
 
-def gtk3_main(device):
+def gtk3_main():
     # Handle pressing Ctr+C properly, ignored by default
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -41,17 +43,20 @@ def gtk3_main(device):
         os.path.abspath(os.path.dirname(__file__)),
         'gtk3.glade'))
 
-    # check autostart status
-    autostart = builder.get_object('menu_autostart')
-    autostart.set_active(os.path.exists(get_autostart_path()))
+    def f(r, device):
+        print(device)
 
     # disable profiles if unsupported
-    if not device.profiles:
-        profile = builder.get_object('menu_profile')
-        profile.set_visible(False)
+    # if not device.profiles:
+    #     profile = builder.get_object('menu_profile')
+    #     profile.set_visible(False)
 
     # bind events
-    builder.connect_signals(TrayMenuEventHandler(builder, device))
+    handler = TrayMenuEventHandler(builder)
+    builder.connect_signals(handler)
+    ratbagd = ratbag.Ratbag.create()
+    ratbagd.connect('device-added', handler.on_device_added)
+    ratbagd.start()
 
     # create tray icon
     trayicon = TrayMenu(APPID, next(find_icons()), builder.get_object('menu'))

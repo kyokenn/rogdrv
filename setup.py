@@ -22,7 +22,7 @@ readme = open('README.md').read()
 
 setup(
     name='rogdrv',
-    version='0.3.0',
+    version='0.4.0',
     description='ASUS ROG Mouse Driver',
     url='https://github.com/kyokenn/rogdrv',
     author='Kyoken',
@@ -37,7 +37,6 @@ setup(
     },
     packages=[
         'rog',
-        'rog.device',
         'rog.ui',
     ],
     data_files=[

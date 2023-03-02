@@ -43,13 +43,24 @@ Author: Kyoken
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
+              <object class="GtkRadioMenuItem" id="menu_profile_0">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">0</property>
+                <property name="label" translatable="yes">Profile 0</property>
+                <property name="use-underline">True</property>
+                <property name="group">menu_profile_1</property>
+                <signal name="activate" handler="on_profile" swapped="yes"/>
+              </object>
+            </child>
+            <child>
               <object class="GtkRadioMenuItem" id="menu_profile_1">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="action-target">1</property>
                 <property name="label" translatable="yes">Profile 1</property>
                 <property name="use-underline">True</property>
-                <property name="group">menu_profile_2</property>
+                <property name="group">menu_profile_0</property>
                 <signal name="activate" handler="on_profile" swapped="yes"/>
               </object>
             </child>
@@ -60,7 +71,7 @@ Author: Kyoken
                 <property name="action-target">2</property>
                 <property name="label" translatable="yes">Profile 2</property>
                 <property name="use-underline">True</property>
-                <property name="group">menu_profile_1</property>
+                <property name="group">menu_profile_0</property>
                 <signal name="activate" handler="on_profile" swapped="yes"/>
               </object>
             </child>
@@ -71,7 +82,7 @@ Author: Kyoken
                 <property name="action-target">3</property>
                 <property name="label" translatable="yes">Profile 3</property>
                 <property name="use-underline">True</property>
-                <property name="group">menu_profile_1</property>
+                <property name="group">menu_profile_0</property>
                 <signal name="activate" handler="on_profile" swapped="yes"/>
               </object>
             </child>
@@ -82,7 +93,7 @@ Author: Kyoken
                 <property name="action-target">4</property>
                 <property name="label" translatable="yes">Profile 4</property>
                 <property name="use-underline">True</property>
-                <property name="group">menu_profile_1</property>
+                <property name="group">menu_profile_0</property>
                 <signal name="activate" handler="on_profile" swapped="yes"/>
               </object>
             </child>
@@ -93,18 +104,7 @@ Author: Kyoken
                 <property name="action-target">5</property>
                 <property name="label" translatable="yes">Profile 5</property>
                 <property name="use-underline">True</property>
-                <property name="group">menu_profile_1</property>
-                <signal name="activate" handler="on_profile" swapped="yes"/>
-              </object>
-            </child>
-            <child>
-              <object class="GtkRadioMenuItem" id="menu_profile_6">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="action-target">6</property>
-                <property name="label" translatable="yes">Profile 6</property>
-                <property name="use-underline">True</property>
-                <property name="group">menu_profile_1</property>
+                <property name="group">menu_profile_0</property>
                 <signal name="activate" handler="on_profile" swapped="yes"/>
               </object>
             </child>
@@ -123,6 +123,16 @@ Author: Kyoken
           <object class="GtkMenu">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <child>
+              <object class="GtkMenuItem" id="menu_dpi_0">
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can-focus">False</property>
+                <property name="action-target">0</property>
+                <property name="label" translatable="yes">Preset 0</property>
+                <property name="use-underline">True</property>
+              </object>
+            </child>
             <child>
               <object class="GtkMenuItem" id="menu_dpi_1">
                 <property name="visible">True</property>
@@ -153,16 +163,6 @@ Author: Kyoken
                 <property name="use-underline">True</property>
               </object>
             </child>
-            <child>
-              <object class="GtkMenuItem" id="menu_dpi_4">
-                <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="can-focus">False</property>
-                <property name="action-target">4</property>
-                <property name="label" translatable="yes">Preset 4</property>
-                <property name="use-underline">True</property>
-              </object>
-            </child>
           </object>
         </child>
       </object>
@@ -178,7 +178,7 @@ Author: Kyoken
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
-              <object class="GtkMenuItem" id="menu_led_logo">
+              <object class="GtkMenuItem" id="menu_led_0">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="action-target">0</property>
@@ -190,7 +190,7 @@ Author: Kyoken
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkMenuItem" id="menu_led_logo_color">
+                      <object class="GtkMenuItem" id="menu_led_0_color">
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can-focus">False</property>
@@ -199,7 +199,7 @@ Author: Kyoken
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="menu_led_logo_brightness">
+                      <object class="GtkMenuItem" id="menu_led_0_brightness">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="action-target">0</property>
@@ -211,62 +211,62 @@ Author: Kyoken
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_logo_brightness_0">
+                              <object class="GtkRadioMenuItem" id="menu_led_0_brightness_0">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">0</property>
                                 <property name="label" translatable="yes">Brightness: 0%</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_logo_brightness_25</property>
+                                <property name="group">menu_led_0_brightness_25</property>
                                 <signal name="activate" handler="on_led_brightness" swapped="yes"/>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_logo_brightness_25">
+                              <object class="GtkRadioMenuItem" id="menu_led_0_brightness_25">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">25</property>
                                 <property name="label" translatable="yes">Brightness: 25%</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_logo_brightness_0</property>
+                                <property name="group">menu_led_0_brightness_0</property>
                                 <signal name="activate" handler="on_led_brightness" swapped="yes"/>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_logo_brightness_50">
+                              <object class="GtkRadioMenuItem" id="menu_led_0_brightness_50">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">50</property>
                                 <property name="label" translatable="yes">Brightness: 50%</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_logo_brightness_0</property>
+                                <property name="group">menu_led_0_brightness_0</property>
                                 <signal name="activate" handler="on_led_brightness" swapped="yes"/>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_logo_brightness_75">
+                              <object class="GtkRadioMenuItem" id="menu_led_0_brightness_75">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">75</property>
                                 <property name="label" translatable="yes">Brightness: 75%</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_logo_brightness_0</property>
+                                <property name="group">menu_led_0_brightness_0</property>
                                 <signal name="activate" handler="on_led_brightness" swapped="yes"/>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_logo_brightness_100">
+                              <object class="GtkRadioMenuItem" id="menu_led_0_brightness_100">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">100</property>
                                 <property name="label" translatable="yes">Brightness: 100%</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_logo_brightness_0</property>
+                                <property name="group">menu_led_0_brightness_0</property>
                                 <signal name="activate" handler="on_led_brightness" swapped="yes"/>
                               </object>
                             </child>
@@ -275,7 +275,7 @@ Author: Kyoken
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="menu_led_logo_mode">
+                      <object class="GtkMenuItem" id="menu_led_0_mode">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="action-target">0</property>
@@ -287,86 +287,38 @@ Author: Kyoken
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_logo_mode_default">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="action-target">0</property>
-                                <property name="label" translatable="yes">Default</property>
-                                <property name="use-underline">True</property>
-                                <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_logo_mode_breath</property>
-                                <signal name="activate" handler="on_led_mode" swapped="yes"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_logo_mode_breath">
+                              <object class="GtkRadioMenuItem" id="menu_led_0_mode_on">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">1</property>
-                                <property name="label" translatable="yes">Breath</property>
+                                <property name="label" translatable="yes">On</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_logo_mode_default</property>
+                                <property name="group">menu_led_0_mode_breathing</property>
                                 <signal name="activate" handler="on_led_mode" swapped="yes"/>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_logo_mode_rainbow">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="action-target">2</property>
-                                <property name="label" translatable="yes">Rainbow</property>
-                                <property name="use-underline">True</property>
-                                <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_logo_mode_default</property>
-                                <signal name="activate" handler="on_led_mode" swapped="yes"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_logo_mode_wave">
+                              <object class="GtkRadioMenuItem" id="menu_led_0_mode_breathing">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">3</property>
-                                <property name="label" translatable="yes">Wave</property>
+                                <property name="label" translatable="yes">Breathing</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_logo_mode_default</property>
+                                <property name="group">menu_led_0_mode_on</property>
                                 <signal name="activate" handler="on_led_mode" swapped="yes"/>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_logo_mode_reactive">
+                              <object class="GtkRadioMenuItem" id="menu_led_0_mode_cycle">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="action-target">4</property>
-                                <property name="label" translatable="yes">Reactive</property>
+                                <property name="action-target">2</property>
+                                <property name="label" translatable="yes">Cycle</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_logo_mode_default</property>
-                                <signal name="activate" handler="on_led_mode" swapped="yes"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_logo_mode_flasher">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="action-target">5</property>
-                                <property name="label" translatable="yes">Flasher</property>
-                                <property name="use-underline">True</property>
-                                <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_logo_mode_default</property>
-                                <signal name="activate" handler="on_led_mode" swapped="yes"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_logo_mode_battery">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="action-target">6</property>
-                                <property name="label" translatable="yes">Battery</property>
-                                <property name="use-underline">True</property>
-                                <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_logo_mode_default</property>
+                                <property name="group">menu_led_0_mode_on</property>
                                 <signal name="activate" handler="on_led_mode" swapped="yes"/>
                               </object>
                             </child>
@@ -379,7 +331,7 @@ Author: Kyoken
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="menu_led_wheel">
+              <object class="GtkMenuItem" id="menu_led_1">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="action-target">1</property>
@@ -391,7 +343,7 @@ Author: Kyoken
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkMenuItem" id="menu_led_wheel_color">
+                      <object class="GtkMenuItem" id="menu_led_1_color">
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can-focus">False</property>
@@ -400,7 +352,7 @@ Author: Kyoken
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="menu_led_wheel_brightness">
+                      <object class="GtkMenuItem" id="menu_led_1_brightness">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="action-target">1</property>
@@ -412,62 +364,62 @@ Author: Kyoken
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_wheel_brightness_0">
+                              <object class="GtkRadioMenuItem" id="menu_led_1_brightness_0">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">1000</property>
                                 <property name="label" translatable="yes">Brightness: 0%</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_wheel_brightness_25</property>
+                                <property name="group">menu_led_1_brightness_25</property>
                                 <signal name="activate" handler="on_led_brightness" swapped="yes"/>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_wheel_brightness_25">
+                              <object class="GtkRadioMenuItem" id="menu_led_1_brightness_25">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">1025</property>
                                 <property name="label" translatable="yes">Brightness: 25%</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_wheel_brightness_0</property>
+                                <property name="group">menu_led_1_brightness_0</property>
                                 <signal name="activate" handler="on_led_brightness" swapped="yes"/>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_wheel_brightness_50">
+                              <object class="GtkRadioMenuItem" id="menu_led_1_brightness_50">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">1050</property>
                                 <property name="label" translatable="yes">Brightness: 50%</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_wheel_brightness_0</property>
+                                <property name="group">menu_led_1_brightness_0</property>
                                 <signal name="activate" handler="on_led_brightness" swapped="yes"/>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_wheel_brightness_75">
+                              <object class="GtkRadioMenuItem" id="menu_led_1_brightness_75">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">1075</property>
                                 <property name="label" translatable="yes">Brightness: 75%</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_wheel_brightness_0</property>
+                                <property name="group">menu_led_1_brightness_0</property>
                                 <signal name="activate" handler="on_led_brightness" swapped="yes"/>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_wheel_brightness_100">
+                              <object class="GtkRadioMenuItem" id="menu_led_1_brightness_100">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">1100</property>
                                 <property name="label" translatable="yes">Brightness: 100%</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_wheel_brightness_0</property>
+                                <property name="group">menu_led_1_brightness_0</property>
                                 <signal name="activate" handler="on_led_brightness" swapped="yes"/>
                               </object>
                             </child>
@@ -476,7 +428,7 @@ Author: Kyoken
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="menu_led_wheel_mode">
+                      <object class="GtkMenuItem" id="menu_led_1_mode">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="action-target">1</property>
@@ -488,86 +440,38 @@ Author: Kyoken
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_wheel_mode_default">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="action-target">10</property>
-                                <property name="label" translatable="yes">Default</property>
-                                <property name="use-underline">True</property>
-                                <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_wheel_mode_breath</property>
-                                <signal name="activate" handler="on_led_mode" swapped="yes"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_wheel_mode_breath">
+                              <object class="GtkRadioMenuItem" id="menu_led_1_mode_on">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">11</property>
-                                <property name="label" translatable="yes">Breath</property>
+                                <property name="label" translatable="yes">On</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_wheel_mode_default</property>
+                                <property name="group">menu_led_1_mode_breathing</property>
                                 <signal name="activate" handler="on_led_mode" swapped="yes"/>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_wheel_mode_rainbow">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="action-target">12</property>
-                                <property name="label" translatable="yes">Rainbow</property>
-                                <property name="use-underline">True</property>
-                                <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_wheel_mode_default</property>
-                                <signal name="activate" handler="on_led_mode" swapped="yes"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_wheel_mode_wave">
+                              <object class="GtkRadioMenuItem" id="menu_led_1_mode_breathing">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">13</property>
-                                <property name="label" translatable="yes">Wave</property>
+                                <property name="label" translatable="yes">Breathing</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_wheel_mode_default</property>
+                                <property name="group">menu_led_1_mode_on</property>
                                 <signal name="activate" handler="on_led_mode" swapped="yes"/>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_wheel_mode_reactive">
+                              <object class="GtkRadioMenuItem" id="menu_led_1_mode_cycle">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="action-target">14</property>
-                                <property name="label" translatable="yes">Reactive</property>
+                                <property name="action-target">12</property>
+                                <property name="label" translatable="yes">Cycle</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_wheel_mode_default</property>
-                                <signal name="activate" handler="on_led_mode" swapped="yes"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_wheel_mode_flasher">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="action-target">15</property>
-                                <property name="label" translatable="yes">Flasher</property>
-                                <property name="use-underline">True</property>
-                                <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_wheel_mode_default</property>
-                                <signal name="activate" handler="on_led_mode" swapped="yes"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_wheel_mode_battery">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="action-target">16</property>
-                                <property name="label" translatable="yes">Battery</property>
-                                <property name="use-underline">True</property>
-                                <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_wheel_mode_default</property>
+                                <property name="group">menu_led_1_mode_on</property>
                                 <signal name="activate" handler="on_led_mode" swapped="yes"/>
                               </object>
                             </child>
@@ -580,7 +484,7 @@ Author: Kyoken
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="menu_led_bottom">
+              <object class="GtkMenuItem" id="menu_led_2">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="action-target">2</property>
@@ -592,7 +496,7 @@ Author: Kyoken
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkMenuItem" id="menu_led_bottom_color">
+                      <object class="GtkMenuItem" id="menu_led_2_color">
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can-focus">False</property>
@@ -601,7 +505,7 @@ Author: Kyoken
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="menu_led_bottom_brightness">
+                      <object class="GtkMenuItem" id="menu_led_2_brightness">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="action-target">2</property>
@@ -613,7 +517,7 @@ Author: Kyoken
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_bottom_brightness_0">
+                              <object class="GtkRadioMenuItem" id="menu_led_2_brightness_0">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">2000</property>
@@ -624,7 +528,7 @@ Author: Kyoken
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_bottom_brightness_25">
+                              <object class="GtkRadioMenuItem" id="menu_led_2_brightness_25">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">2025</property>
@@ -635,7 +539,7 @@ Author: Kyoken
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_bottom_brightness_50">
+                              <object class="GtkRadioMenuItem" id="menu_led_2_brightness_50">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">2050</property>
@@ -646,7 +550,7 @@ Author: Kyoken
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_bottom_brightness_75">
+                              <object class="GtkRadioMenuItem" id="menu_led_2_brightness_75">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">2075</property>
@@ -657,7 +561,7 @@ Author: Kyoken
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_bottom_brightness_100">
+                              <object class="GtkRadioMenuItem" id="menu_led_2_brightness_100">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">2100</property>
@@ -672,7 +576,7 @@ Author: Kyoken
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="menu_led_bottom_mode">
+                      <object class="GtkMenuItem" id="menu_led_2_mode">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="action-target">2</property>
@@ -684,86 +588,38 @@ Author: Kyoken
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_bottom_mode_default">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="action-target">20</property>
-                                <property name="label" translatable="yes">Default</property>
-                                <property name="use-underline">True</property>
-                                <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_bottom_mode_breath</property>
-                                <signal name="activate" handler="on_led_mode" swapped="yes"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_bottom_mode_breath">
+                              <object class="GtkRadioMenuItem" id="menu_led_2_mode_on">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">21</property>
-                                <property name="label" translatable="yes">Breath</property>
+                                <property name="label" translatable="yes">On</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_bottom_mode_default</property>
+                                <property name="group">menu_led_2_mode_breathing</property>
                                 <signal name="activate" handler="on_led_mode" swapped="yes"/>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_bottom_mode_rainbow">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="action-target">22</property>
-                                <property name="label" translatable="yes">Rainbow</property>
-                                <property name="use-underline">True</property>
-                                <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_bottom_mode_default</property>
-                                <signal name="activate" handler="on_led_mode" swapped="yes"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_bottom_mode_wave">
+                              <object class="GtkRadioMenuItem" id="menu_led_2_mode_breathing">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="action-target">23</property>
-                                <property name="label" translatable="yes">Wave</property>
+                                <property name="label" translatable="yes">Breathing</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_bottom_mode_default</property>
+                                <property name="group">menu_led_2_mode_on</property>
                                 <signal name="activate" handler="on_led_mode" swapped="yes"/>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_bottom_mode_reactive">
+                              <object class="GtkRadioMenuItem" id="menu_led_2_mode_cycle">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="action-target">24</property>
-                                <property name="label" translatable="yes">Reactive</property>
+                                <property name="action-target">22</property>
+                                <property name="label" translatable="yes">Cycle</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_bottom_mode_default</property>
-                                <signal name="activate" handler="on_led_mode" swapped="yes"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_bottom_mode_flasher">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="action-target">25</property>
-                                <property name="label" translatable="yes">Flasher</property>
-                                <property name="use-underline">True</property>
-                                <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_bottom_mode_default</property>
-                                <signal name="activate" handler="on_led_mode" swapped="yes"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkRadioMenuItem" id="menu_led_bottom_mode_battery">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="action-target">26</property>
-                                <property name="label" translatable="yes">Battery</property>
-                                <property name="use-underline">True</property>
-                                <property name="draw-as-radio">True</property>
-                                <property name="group">menu_led_bottom_mode_default</property>
+                                <property name="group">menu_led_2_mode_on</property>
                                 <signal name="activate" handler="on_led_mode" swapped="yes"/>
                               </object>
                             </child>

@@ -15,39 +15,74 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 import os
-import signal
 
 from . import Gtk, Notify
 from .utils import get_autostart_path
-from .. import defs, logger
+from .. import logger
 
 
 class TrayMenuEventHandler(object):
     """
     GTK event handler for tray icon menu.
     """
-    def __init__(self, builder, device):
+    def __init__(self, builder):
         self._builder = builder
+        self._device = None
+
+        menu_profile = self._builder.get_object('menu_profile')
+        menu_profile.set_visible(False)
+
+        menu_dpi = self._builder.get_object('menu_dpi')
+        menu_dpi.set_visible(False)
+
+        menu_led = self._builder.get_object('menu_led')
+        menu_led.set_visible(False)
+
+        menu_rate = self._builder.get_object('menu_rate')
+        menu_rate.set_visible(False)
+
+        menu_perf = self._builder.get_object('menu_perf')
+        menu_perf.set_visible(False)
+
+        autostart = self._builder.get_object('menu_autostart')
+        autostart.set_active(os.path.exists(get_autostart_path()))
+
+    def on_device_added(self, r, device):
         self._device = device
 
-        for i in range(1, 6 + 1):
-            if i > self._device.profiles:
+        for i in range(6):
+            if i >= len(device.profiles):
                 menu_item = self._builder.get_object('menu_profile_{}'.format(i))
                 menu_item.set_visible(False)
+        menu_profile = self._builder.get_object('menu_profile')
+        menu_profile.set_visible(bool(device.profiles))
 
-        for i in range(1, 4 + 1):
-            menu_item = self._builder.get_object('menu_dpi_{}'.format(i))
-            if i > self._device.dpis:
-                menu_item.set_visible(False)
+        for profile in device.profiles:
+            if not profile.active:
+                continue
 
-        if not self._device.wireless:
-            self._builder.get_object('menu_sleep').set_visible(False)
-            self._builder.get_object('menu_battery').set_visible(False)
+            for i in range(4):
+                menu_item = self._builder.get_object('menu_dpi_{}'.format(i))
+                if i >= len(profile.resolutions):
+                    menu_item.set_visible(False)
+            menu_dpi = self._builder.get_object('menu_dpi')
+            menu_dpi.set_visible(True)
 
-        for i, name in enumerate(defs.LED_NAMES[:3]):
-            if i >= self._device.leds:
-                menu_item = self._builder.get_object('menu_led_{}'.format(name))
-                menu_item.set_visible(False)
+            # if not self._device.wireless:
+            if True:
+                self._builder.get_object('menu_sleep').set_visible(False)
+                self._builder.get_object('menu_battery').set_visible(False)
+
+            if profile.leds:
+                for i in range(3):
+                    if i >= len(profile.leds):
+                        menu_item = self._builder.get_object('menu_led_{}'.format(i))
+                        menu_item.set_visible(False)
+            menu_led = self._builder.get_object('menu_led')
+            menu_led.set_visible(bool(profile.leds))
+
+            menu_rate = self._builder.get_object('menu_rate')
+            menu_rate.set_visible(True)
 
     def on_quit(self, *args, **kwargs):
         Notify.uninit()
@@ -79,11 +114,10 @@ StartupNotify=false
         """
         Event on profile submenu expanding.
         """
-        profile, _, _ = self._device.get_profile_version()
-        logger.debug('current profile is {}'.format(profile))
-        for i in range(1, self._device.profiles + 1):
-            menu_item = self._builder.get_object('menu_profile_{}'.format(i))
-            if i == profile:
+        for profile in self._device.profiles:
+            menu_item = self._builder.get_object('menu_profile_{}'.format(profile.index))
+            if profile.active:
+                logger.debug('current profile is {}'.format(profile.index))
                 menu_item.set_active(True)
 
     def on_profile(self, item, *args, **kwargs):
@@ -91,49 +125,67 @@ StartupNotify=false
         Event on profile select.
         """
         if item.get_active():
-            profile_old, _, _ = self._device.get_profile_version()
+            profile_old = 0
             profile_new = int(str(item.get_action_target_value()))  # GVariant -> str -> int
+
+            for profile in self._device.profiles:
+                if profile.active:
+                    profile_old = profile.index
+
             if profile_old != profile_new:
                 logger.debug(
                     'switching profile from {} to {}'
                     .format(profile_old, profile_new))
-                self._device.set_profile(profile_new)
+                for profile in self._device.profiles:
+                    if profile.index == profile_new:
+                        profile.set_active()
 
     def on_dpi_choice(self, item, *args, **kwargs):
         """
         Event on DPI submenu expanding.
         """
-        dpis, _, _, _ = self._device.get_dpi_rate_response_snapping()
-        for i, dpi in enumerate(dpis, start=1):
-            menu_item = self._builder.get_object('menu_dpi_{}'.format(i))
-            menu_item.set_label(
-                'Preset {} ({}): {}'
-                .format(i, defs.DPI_PRESET_COLORS[i], dpi))
+        for profile in self._device.profiles:
+            if not profile.active:
+                continue
+
+            for resolution in profile.resolutions:
+                menu_item = self._builder.get_object('menu_dpi_{}'.format(resolution.index))
+                menu_item.set_label(
+                    'Preset {}: {}'
+                    .format(resolution.index, resolution.dpi[0]))
 
     def on_rate_choice(self, item, *args, **kwargs):
         """
         Event on polling rate submenu expanding.
         """
-        _, rate, _, _ = self._device.get_dpi_rate_response_snapping()
-        logger.debug('current polling rate is {}'.format(rate))
-        for irate in defs.POLLING_RATES.values():
-            menu_item = self._builder.get_object('menu_rate_{}'.format(irate))
-            if irate == rate:
-                menu_item.set_active(True)
+        for profile in self._device.profiles:
+            if not profile.active:
+                continue
+
+            logger.debug('current polling rate is {}'.format(profile.report_rate))
+            for irate in profile.report_rates:
+                menu_item = self._builder.get_object('menu_rate_{}'.format(irate))
+                if irate == profile.report_rate:
+                    menu_item.set_active(True)
 
     def on_rate(self, item, *args, **kwargs):
         """
         Event on polling rate select.
         """
         if item.get_active():
-            _, rate_old, _, _ = self._device.get_dpi_rate_response_snapping()
-            rate_new = int(str(item.get_action_target_value()))  # GVariant -> str -> int
-            if rate_old != rate_new:
-                logger.debug(
-                    'changing polling rate from {} to {}'
-                    .format(rate_old, rate_new))
-                self._device.set_rate(rate_new)
-                self._device.save()
+            for profile in self._device.profiles:
+                if not profile.active:
+                    continue
+
+                rate_old = profile.report_rate
+                rate_new = int(str(item.get_action_target_value()))  # GVariant -> str -> int
+
+                if rate_old != rate_new:
+                    logger.debug(
+                        'changing polling rate from {} to {}'
+                        .format(rate_old, rate_new))
+                    profile.set_report_rate(rate_new)
+                    self._device.emit('commit', None)
 
     def on_perf_choice(self, item, *args, **kwargs):
         """
@@ -215,63 +267,90 @@ StartupNotify=false
                 self._device.save()
 
     def on_led_choice(self, item, *args, **kwargs):
-        leds = self._device.get_leds()
         iled = int(str(item.get_action_target_value()))  # GVariant -> str -> int
-        for i, led in enumerate(leds):
-            if iled == i:
-                name = defs.LED_NAMES[i]
 
-                c = self._builder.get_object('menu_led_{}_color'.format(name))
-                c.set_label('Color: {}'.format(led.hex))
+        for profile in self._device.profiles:
+            if not profile.active:
+                continue
 
-                b = self._builder.get_object('menu_led_{}_brightness'.format(name))
-                b.set_label('Brightness: {}%'.format(led.brightness * 25))
+            for led in profile.leds:
+                if iled == led.index:
+                    c = self._builder.get_object('menu_led_{}_color'.format(led.index))
+                    c.set_label('Color: #{:02x}{:02x}{:02x}'.format(*led.color))
 
-                m = self._builder.get_object('menu_led_{}_mode'.format(name))
-                m.set_label('Mode: {}'.format(led.mode))
+                    b = self._builder.get_object('menu_led_{}_brightness'.format(led.index))
+                    b.set_label('Brightness: {}%'.format(round(led.brightness / 255 * 100)))
+
+                    m = self._builder.get_object('menu_led_{}_mode'.format(led.index))
+                    m.set_label('Mode: {}'.format(led.mode.name))
 
     def on_led_mode_choice(self, item, *args, **kwargs):
-        leds = self._device.get_leds()
         iled = int(str(item.get_action_target_value()))  # GVariant -> str -> int
-        for i, led in enumerate(leds):
-            if int(iled) == i:
-                menu_item = self._builder.get_object(
-                    'menu_led_{}_mode_{}'.format(defs.LED_NAMES[i], led.mode))
-                menu_item.set_active(True)
+
+        for profile in self._device.profiles:
+            if not profile.active:
+                continue
+
+            for led in profile.leds:
+                if iled == led.index:
+                    menu_item = self._builder.get_object(
+                        'menu_led_{}_mode_{}'.format(led.index, led.mode.name.lower()))
+                    menu_item.set_active(True)
 
     def on_led_mode(self, item, *args, **kwargs):
-        leds = self._device.get_leds()
         # GVariant -> str -> int -> str
         led_id, mode = '{:02d}'.format(int(str(item.get_action_target_value())))
-        for i, led in enumerate(leds):
-            if int(led_id) == i:
-                self._device.set_led(
-                    defs.LED_NAMES[i],
-                    led.rgb,
-                    defs.LED_MODES[int(mode)],
-                    led.brightness)
-                self._device.save()
+
+        if item.get_active():
+            for profile in self._device.profiles:
+                if not profile.active:
+                    continue
+
+                for led in profile.leds:
+                    if int(led_id) == led.index:
+                        led_mode_old = led.mode
+                        led_mode_new = None
+
+                        for name in dir(led.Mode):
+                            led_mode = getattr(led.Mode, name)
+                            if hasattr(led_mode, 'value') and led_mode.value == int(mode):
+                                led_mode_new = led_mode
+                                break
+
+                        if led_mode_old != led_mode_new:
+                            led.set_mode(led_mode_new)
+                            self._device.emit('commit', None)
 
     def on_led_brightness_choice(self, item, *args, **kwargs):
-        leds = self._device.get_leds()
         led_id = int(str(item.get_action_target_value()))  # GVariant -> str -> int
-        for i, led in enumerate(leds):
-            if int(led_id) == i:
-                menu_item = self._builder.get_object(
-                    'menu_led_{}_brightness_{}'
-                    .format(defs.LED_NAMES[i], led.brightness * 25))
-                menu_item.set_active(True)
+
+        for profile in self._device.profiles:
+            if not profile.active:
+                continue
+
+            for led in profile.leds:
+                if led_id == led.index:
+                    menu_item = self._builder.get_object(
+                        'menu_led_{}_brightness_{}'
+                        .format(led.index, round(led.brightness / 255 * 100)))
+                    menu_item.set_active(True)
 
     def on_led_brightness(self, item, *args, **kwargs):
-        leds = self._device.get_leds()
         # GVariant -> str -> int -> str
         s = '{:04d}'.format(int(str(item.get_action_target_value())))
         led_id = int(s[0])
         brightness = int(s[1:])
-        for i, led in enumerate(leds):
-            if led_id == i:
-                self._device.set_led(
-                    defs.LED_NAMES[i],
-                    led.rgb, led.mode,
-                    brightness // 25)
-                self._device.save()
+
+        if item.get_active():
+            for profile in self._device.profiles:
+                if not profile.active:
+                    continue
+
+                for led in profile.leds:
+                    if led_id == led.index:
+                        brightness_old = led.brightness
+                        brightness_new = round(brightness / 100 * 255)
+
+                        if brightness_old != brightness_new:
+                            led.set_brightness(brightness_new)
+                            self._device.emit('commit', None)

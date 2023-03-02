@@ -2,126 +2,31 @@ rogdrv
 ======
 
 **rogdrv** is a simple ASUS ROG (Republic of Gamers) userspace mouse driver for Linux.
-The mouse is a composite device which consists of 3 interfaces:
-mouse, keyboard and consumer control (for changing the mouse settings).
-
-The keyboard interface for some devices is unsupported on Linux,
-but it's recognised as HID device.
-So this driver maps HID events to the generic keyboard events.
-
-The protocol was reverse-engineered, so everything is experimental. Use at your own risk.
+It acts as native (no D-BUS interaction) front-end to [ratbag-python](https://github.com/kyokenn/ratbag-python)
 
 
-Alternative solutions
----------------------
+Supported devices
+-----------------
 
-**Keyboard events handling module**
+[Device files](https://github.com/kyokenn/ratbag-python/tree/master/ratbag/devices)
 
-HID kernel module - [hid-asus-mouse](https://github.com/kyokenn/hid-asus-mouse)
-
-
-**Mouse configuration tool**
-
-[piper](https://github.com/libratbag/piper)
-
-with
-
-[libratbag](https://github.com/libratbag/libratbag)
-
-Current missing features:
-
-* Button response
-* Angle snapping
-* Extra LED modes
-* Key binding
-* Sleep timeout
-
-
-Supported devices and features
-------------------------------
-
-Device name                   | Profiles | Button Bindings | Performance Settings | LEDs | Sleep
-------------------------------|----------|-----------------|----------------------|------|-------
-**Buzzard**                   | +        | ?               | ?                    | ?    | N/A
-**Gladius II**                | +        | +               | +                    | +    | N/A
-**Gladius II Origin**         | +        | +               | +                    | +    | N/A
-**Gladius II Origin PNK LTD** | +        | +               | +                    | +    | N/A
-**Keris Wireless**            | +        | +               | +                    | +    | +
-**Chakram**                   | +        | ?               | +                    | +    | +
-**Pugio**                     | +        | +               | +                    | +    | N/A
-**Pugio II**                  | +        | ?               | ?                    | +    | ?
-**Strix Carry**               | +        | +               | +                    | N/A  | +
-**Strix Impact II Wireless**  | +        | +               | +                    | +    | ?
-**Strix Impact**              | N/A      | ?               | ?                    | +    | N/A
-
-* **Profiles** - Profile switching feature
-* **Button Bindings** - Buttons binding feature
-* **Performance Settings** - DPI, polling rate, buttons response, angle snapping configuration feature
-* **LEDs** - LED color customization feature
-* **Sleep** - Sleep timeout setting feature for the wireless mices
-
-There is a chance that a driver can be compatible with other mouse devices
-from ASUS ROG (Republic of Gamers) series.
-
-Unsupported devices
--------------------
-
-Those devices are from the same generation and they are based on the same ASUS hardware which
-is not compatible with **hid-generic** linux driver.
-
-You can check it with:
-```
-LIBUSB_DEBUG=9 sudo -E lsusb -v -d 0b05:<mouse product ID>
-```
-
-There would be no **Consumer Control** interface in the device descriptor
-which means they are not compatible.
-It would report only **Mouse** and **Keyboard** interfaces.
-
-* Spatha
-* Gladius
-* Strix Evolve
-
-
-Requirements
-------------
-
-**Common requirements**
-
-* python >= 3.0
-* python-evdev
-* gir-appindicator3
-
-**HID requirements**
-
-Only single one of it is required
-
-* [python3-hid](https://github.com/trezor/cython-hidapi)
-* [python3-hidapi](https://github.com/jbaiter/hidapi-cffi)
-* [hid](https://github.com/apmorton/pyhidapi) from PyPi (could fail to find devices, **not recommended!**)
-
-Ubuntu:
-```
-apt install python3-hidapi python3-evdev gir1.2-appindicator3-0.1
-```
 
 Installation
 ------------
 
-Userspace driver installation:
-
+Clone the git repository:
 ```
-sudo python3 setup.py install
-```
-or
-```
-sudo pip3 install .
+git clone https://github.com/kyokenn/rogdrv.git
 ```
 
-You need r/w permissions for /dev/hidrawX file of your mouse.
+Install the ratbag-python:
+```
+sudo pip3 install ./ratbag-python
+```
 
-You can solve this by installing a custom udev rules:
-
+For using rogdrv and rogdrv-config without "root"
+you will need r/w permissions for /dev/hidrawX file of your mouse.
+You can solve this by installing the custom udev rules:
 ```
 sudo ./install_udev
 sudo udevadm control --reload-rules
@@ -133,16 +38,16 @@ Using
 
 Userspace driver consists of 2 programs: **rogdrv** and **rogdrv-config**
 
-**rogdrv** is a virtual uinput device driver which converts mouse events into uinput events.
+**rogdrv** is mouse configuration tool with GUI,
+which have easy access to some simple settings like profile switching.
 ![rogdrv](/screenshot.png)
 ```
-Usage: rogdrv [--debug] [--console]
-  --help - display help
-  --debug - debug mode
-  --console - starts in pure console mode, disables tray icon
+Usage:
+  rogdrv
 ```
 
-**rogdrv-config** is a mouse configuration tool.
+**rogdrv-config** is a mouse configuration tool for the console,
+which covers the almost all settings.
 ```
 Usage:
   rogdrv-config <command> --help - display help for a command
@@ -153,12 +58,41 @@ Available commands:
   rogdrv-config bind - bind a button or display current bindings
   rogdrv-config color - get/set LED colors
   rogdrv-config dpi - get/set DPI
-  rogdrv-config dump - dump settings to stdout or .json file
-  rogdrv-config load - load settings from .json file
   rogdrv-config profile - get/set profile
   rogdrv-config rate - get/set polling rate
-  rogdrv-config response - get/set button response
-  rogdrv-config sleep - get/set sleep timeout and battery alert level
-  rogdrv-config snapping - enable/disable snapping
-  rogdrv-config version - get device firmware version
 ```
+
+
+See also
+--------
+
+**Kernel Module**
+If your mouse doesn't support native HID-compatible keyboard events
+(old Gladius II generation and earlier mice in RF mode) or you want some extended features,
+then you can try the kernel module
+[hid-asus-mouse](https://github.com/kyokenn/hid-asus-mouse)
+
+
+**ratbag-python**
+You can run the "ratbag-python" daemon and use it with [piper](https://github.com/libratbag/piper)
+
+Install D-BUS settings:
+```
+sudo cp -fv ./ratbag-python/dbus/org.freedesktop.ratbag1.conf /etc/dbus-1/system.d/
+```
+
+Run the "ratbag-python" daemon:
+```
+sudo ratbagd
+```
+
+Run the "piper" GUI.
+```
+piper
+```
+
+
+**libratbag**
+
+You can also replace "ratbag-python" daemon with original "libratbag"
+[libratbag](https://github.com/libratbag/libratbag)
