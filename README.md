@@ -17,6 +17,7 @@ Installation
 Clone the git repository:
 ```
 git clone https://github.com/kyokenn/rogdrv.git
+cd rogdrv
 ```
 
 Install the ratbag-python:
@@ -24,9 +25,15 @@ Install the ratbag-python:
 sudo pip3 install ./ratbag-python
 ```
 
-For using rogdrv and rogdrv-config without "root"
-you will need r/w permissions for /dev/hidrawX file of your mouse.
-You can solve this by installing the custom udev rules:
+Install the rogdrv:
+```
+sudo pip3 install .
+```
+
+**rogdrv** and **rogdrv-config** requires r/w permissions
+for /dev/hidrawX file of your mouse.
+If you want to run them in _rootless_ mode without "sudo",
+then you can install the custom udev rules:
 ```
 sudo ./install_udev
 sudo udevadm control --reload-rules
@@ -66,19 +73,19 @@ Available commands:
 See also
 --------
 
-**Kernel Module**
+**hid-asus-mouse**
 
 If your mouse doesn't support native HID-compatible keyboard events
-(old Gladius II generation and earlier mice in RF mode) or you want some extended features,
+(old Gladius II generation and earlier mice in RF mode) or you want some extra features,
 then you can try the kernel module
 [hid-asus-mouse](https://github.com/kyokenn/hid-asus-mouse)
 
 
 **ratbag-python**
 
-You can run the "ratbag-python" daemon and use it with [piper](https://github.com/libratbag/piper)
+You can run the **ratbag-python** daemon and use it with [piper](https://github.com/libratbag/piper)
 
-Install D-BUS settings:
+Install the D-BUS settings:
 ```
 sudo cp -fv ./ratbag-python/dbus/org.freedesktop.ratbag1.conf /etc/dbus-1/system.d/
 ```
@@ -96,5 +103,5 @@ piper
 
 **libratbag**
 
-You can also replace "ratbag-python" daemon with original "libratbag"
+You can also replace **ratbag-python** daemon with original
 [libratbag](https://github.com/libratbag/libratbag)
