@@ -36,11 +36,23 @@ KERNEL=="hidraw*", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="197b", MODE="0660
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="197f", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
 KERNEL=="hidraw*", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="197f", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
 
+# ASUS ROG Gladius III Wireless AimPoint
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1a72", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
+KERNEL=="hidraw*", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1a72", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1a70", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
+KERNEL=="hidraw*", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1a70", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
+
 # ASUS ROG Keris Wireless
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1960", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
 KERNEL=="hidraw*", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1960", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="195e", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
 KERNEL=="hidraw*", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="195e", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
+
+# ASUS ROG Keris Wireless AimPoint
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1a68", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
+KERNEL=="hidraw*", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1a68", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1a66", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
+KERNEL=="hidraw*", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1a66", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
 
 # ASUS ROG Pugio
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1846", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
