@@ -1,42 +1,9 @@
-#!/usr/bin/env python3
+#!/bin/sh
 
-from rog.device.base import DeviceMeta
+UDEV_RULES=/etc/udev/rules.d/50-rogdrv.rules
+cp -f udev/50-rogdrv.rules ${UDEV_RULES}
 
-UDEV_RULES = '/etc/udev/rules.d/50-rogdrv.rules'
-
-
-def main():
-    rules = ['KERNEL=="uinput", MODE="0666"']
-
-    assign = (
-        'MODE="0660"',
-        'GROUP="plugdev"',
-        'TAG+="uaccess"',
-        'TAG+="udev-acl"',
-    )
-
-    for c in DeviceMeta.device_classes:
-        rules.append(', '.join((
-            'SUBSYSTEM=="usb"',
-            'ATTRS{{idVendor}}=="{:04x}"'.format(c.vendor_id),
-            'ATTRS{{idProduct}}=="{:04x}"'.format(c.product_id),
-        ) + assign))
-
-        rules.append(', '.join((
-            'KERNEL=="hidraw*"',
-            'ATTRS{{idVendor}}=="{:04x}"'.format(c.vendor_id),
-            'ATTRS{{idProduct}}=="{:04x}"'.format(c.product_id),
-        ) + assign))
-
-    with open(UDEV_RULES, 'w') as f:
-        for rule in rules:
-            f.write(rule + '\n')
-
-    print('udev rules are saved into "{}"'.format(UDEV_RULES))
-    print('run to apply them:')
-    print('$ sudo udevadm control --reload-rules')
-    print('$ sudo udevadm trigger')
-
-
-if __name__ == '__main__':
-    main()
+echo udev rules are saved into ${UDEV_RULES}
+echo run to apply them:
+echo $ sudo udevadm control --reload-rules
+echo $ sudo udevadm trigger
