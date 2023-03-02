@@ -67,6 +67,7 @@ See also
 --------
 
 **Kernel Module**
+
 If your mouse doesn't support native HID-compatible keyboard events
 (old Gladius II generation and earlier mice in RF mode) or you want some extended features,
 then you can try the kernel module
@@ -74,6 +75,7 @@ then you can try the kernel module
 
 
 **ratbag-python**
+
 You can run the "ratbag-python" daemon and use it with [piper](https://github.com/libratbag/piper)
 
 Install D-BUS settings:
