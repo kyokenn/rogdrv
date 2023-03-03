@@ -67,6 +67,8 @@ Available commands:
   rogdrv-config dpi - get/set DPI
   rogdrv-config profile - get/set profile
   rogdrv-config rate - get/set polling rate
+  rogdrv-config response - get/set button response
+  rogdrv-config snapping - enable/disable snapping
 ```
 
 

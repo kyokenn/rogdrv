@@ -354,7 +354,7 @@ Available commands:''')
         print('Charge: {}%'.format(charge))
         print('Alert: {}'.format('{}%'.format(alert) if alert else 'disabled'))
 
-    def _snapping(self):
+    def snapping(self):
         """
         enable/disable snapping
         """
@@ -364,14 +364,26 @@ Available commands:''')
             help='Angle snapping: 0 - disabled, 1 - enabled')
         args = parser.parse_args()
 
-        if args.snapping >= 0:
-            self._device.set_snapping(bool(args.snapping))
-            self._device.save()
+        def read(r, device):
+            if args.snapping >= 0:
+                for profile in device.profiles:
+                    if not profile.active:
+                        continue
 
-        dpis, rate, response, snapping = self._device.get_dpi_rate_response_snapping()
-        print('Angle snapping: {}'.format('enabled' if snapping else 'disabled'))
+                    profile.set_angle_snapping(args.snapping)
 
-    def _response(self):
+                device.emit('commit', None)
+
+            for profile in device.profiles:
+                if not profile.active:
+                    continue
+
+                print('Angle snapping: {}'.format(
+                    'enabled' if profile.angle_snapping else 'disabled'))
+
+        self._get_device(read)
+
+    def response(self):
         """
         get/set button response
         """
@@ -381,12 +393,23 @@ Available commands:''')
             help='Response in ms: 4, 8, 12, 16, 20, 24, 28, 32')
         args = parser.parse_args()
 
-        if args.response:
-            self._device.set_response(args.response)
-            self._device.save()
+        def read(r, device):
+            if args.response > 0:
+                for profile in device.profiles:
+                    if not profile.active:
+                        continue
 
-        dpis, rate, response, snapping = self._device.get_dpi_rate_response_snapping()
-        print('Button response: {} ms'.format(response))
+                    profile.set_debounce(args.response)
+
+                device.emit('commit', None)
+
+            for profile in device.profiles:
+                if not profile.active:
+                    continue
+
+                print(f'Debounce time: {profile.debounce} ms')
+
+        self._get_device(read)
 
 
 def logging_init():
