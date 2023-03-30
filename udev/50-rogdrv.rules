@@ -35,6 +35,8 @@ KERNEL=="hidraw*", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="197b", MODE="0660
 # ASUS ROG Gladius III Wireless
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="197f", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
 KERNEL=="hidraw*", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="197f", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="197d", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
+KERNEL=="hidraw*", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="197d", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
 
 # ASUS ROG Gladius III Wireless AimPoint
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1a72", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
