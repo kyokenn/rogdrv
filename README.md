@@ -14,9 +14,9 @@ Supported devices
 Installation
 ------------
 
-Clone the git repository:
+Clone the git repository (including **ratbag-python** submodule):
 ```
-git clone https://github.com/kyokenn/rogdrv.git
+git clone --recurse-submodules https://github.com/kyokenn/rogdrv.git
 cd rogdrv
 ```
 
