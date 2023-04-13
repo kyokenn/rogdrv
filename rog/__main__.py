@@ -266,12 +266,12 @@ Available commands:''')
             '-d', '--dpi', type=int, default=-1, required=False,
             help='DPI rate')
         parser.add_argument(
-            '-p', '--preset', type=int, default=-1, required=False,
+            '-p', '--preset', type=int, default=0, required=False,
             help='Preset no. to set, starting from 0')
         args = parser.parse_args()
 
         def read(r, device):
-            if args.dpi >= 0 and args.preset >= 0:
+            if args.dpi >= 0:
                 for profile in device.profiles:
                     if not profile.active:
                         continue
