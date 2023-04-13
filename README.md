@@ -45,6 +45,8 @@ Using
 
 Userspace driver consists of 2 programs: **rogdrv** and **rogdrv-config**
 
+Your mouse must be connected using RF or USB.
+
 **rogdrv** is mouse configuration tool with GUI,
 which have easy access to some simple settings like profile switching.
 ![rogdrv](/screenshot.png)
