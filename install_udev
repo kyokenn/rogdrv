@@ -1,9 +1,6 @@
 #!/bin/sh
 
 UDEV_RULES=/etc/udev/rules.d/50-rogdrv.rules
-cp -f udev/50-rogdrv.rules ${UDEV_RULES}
-
-echo udev rules are saved into ${UDEV_RULES}
-echo run to apply them:
-echo $ sudo udevadm control --reload-rules
-echo $ sudo udevadm trigger
+cp -fv udev/50-rogdrv.rules ${UDEV_RULES}
+sudo udevadm control --reload-rules
+sudo udevadm trigger

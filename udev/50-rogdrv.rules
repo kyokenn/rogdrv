@@ -1,3 +1,6 @@
+# uinput
+KERNEL=="uinput*", GROUP="plugdev", MODE="0660"
+
 # ASUS ROG GX860 Buzzard Mouse
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1816", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
 KERNEL=="hidraw*", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1816", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
@@ -9,6 +12,8 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="18e3", MODE="0660"
 KERNEL=="hidraw*", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="18e3", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
 
 # ASUS ROG Chakram X (Origin)
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1a1a", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
+KERNEL=="hidraw*", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1a1a", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1a18", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
 KERNEL=="hidraw*", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1a18", MODE="0660", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
 
