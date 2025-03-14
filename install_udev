@@ -2,5 +2,5 @@
 
 UDEV_RULES=/etc/udev/rules.d/50-rogdrv.rules
 cp -fv udev/50-rogdrv.rules ${UDEV_RULES}
-sudo udevadm control --reload-rules
-sudo udevadm trigger
+udevadm control --reload-rules
+udevadm trigger
